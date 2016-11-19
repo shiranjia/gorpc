@@ -1,13 +1,15 @@
 package register
 
-import "github.com/coreos/etcd/client"
+import (
+	"github.com/coreos/etcd/client"
+)
 
 type Register interface {
 
 	/**
 	建立链接
 	 */
-	Connect()
+	connect()
 
 	/**
 	设置元素

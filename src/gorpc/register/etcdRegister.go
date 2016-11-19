@@ -23,7 +23,21 @@ type etcdRegister struct {
 	client client.KeysAPI
 }
 
-func (r * etcdRegister) Connect()  {
+//构造函数
+func CreateEtcdRegister(host string) Register  {
+	var r Register
+	c.Try(func(){
+		etcd := &etcdRegister{}
+		etcd.host = host
+		r = etcd
+		r.connect()
+	}, func(err interface{}) {
+		log.Fatalln("create register err:",err)
+	})
+	return r
+}
+
+func (r * etcdRegister) connect()  {
 	c.Try(func(){
 		cfg := client.Config{
 			Endpoints:               strings.Split(r.host,";"),

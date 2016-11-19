@@ -7,16 +7,12 @@ import (
 )
 
 func getRegister() Register  {
-	var r Register
-	etcd := &etcdRegister{}
-	etcd.host = "http://127.0.0.1:2379"
-	r = etcd
-	r.Connect()
+	r := CreateEtcdRegister("http://127.0.0.1:2379")
 	return r
 }
 
 func TestEtcdRegister_Get(t *testing.T)  {
-	t.Log("get test")
+	t.Log("Get test")
 	r := getRegister()
 	t.Log(r.Get("/foo"))
 }
@@ -28,14 +24,14 @@ func TestEtcdRegister_GetChildren(t *testing.T) {
 }
 
 func TestEtcdRegister_Set(t *testing.T)  {
-	t.Log("set test")
+	t.Log("Set test")
 	r := getRegister()
-	t.Log(r.Set("/foo/bar","123eee"))
+	t.Log(r.Set("/foo/bar","123ee"))
 	t.Log(r.Get("/foo/bar"))
 }
 
 func TestEtcdRegister_Delete(t *testing.T)  {
-	t.Log("set delete")
+	t.Log("Delete test")
 	r := getRegister()
 	t.Log(r.Delete("/foo/bar"))
 	t.Log(r.Delete("/foo"))
@@ -43,7 +39,7 @@ func TestEtcdRegister_Delete(t *testing.T)  {
 }
 
 func TestEtcdRegister_AddListener(t *testing.T) {
-	t.Log("set AddListener")
+	t.Log("AddListener test")
 	r := getRegister()
 	r.AddListener("/foo",make(chan int), func(c *client.Response) {
 		t.Log(c.Action," 》",c.Node)
