@@ -37,6 +37,7 @@ func (r * etcdRegister) Connect()  {
 		}
 		r.client = client.NewKeysAPI(c)
 		r.rootPath = "/gorpc"
+		r.separator = "/"
 	},func(v interface{}){
 		log.Fatal("create etcd client err:",v)
 	})
@@ -101,7 +102,7 @@ func (r *etcdRegister) AddListener(path string , cancel <- chan int,
 }
 
 func (r *etcdRegister) path2key(path string) string{
-	ps := strings.Split(path,"/")
+	ps := strings.Split(path,r.separator)
 	l := len(ps)
 	key := ps[0]
 	if l > 0 {
