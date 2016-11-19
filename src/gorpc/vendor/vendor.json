@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "KYLyXGFPKI8pCisLtNDthd8/Ieo=",
+			"path": "github.com/coreos/etcd/client",
+			"revision": "7e7c7e157e760a2e9876a46abe610337a63f33bc",
+			"revisionTime": "2016-11-19T06:34:35Z"
+		},
+		{
+			"checksumSHA1": "gIrcwv233FUSVJ2jlArLB0jeLQE=",
+			"path": "github.com/ugorji/go/codec",
+			"revision": "faddd6128c66c4708f45fdc007f575f75e592a3c",
+			"revisionTime": "2016-09-28T01:52:44Z"
+		}
+	],
+	"rootPath": "gorpc"
+}
