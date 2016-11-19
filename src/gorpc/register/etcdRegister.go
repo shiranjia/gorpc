@@ -50,27 +50,33 @@ func (r *etcdRegister) Set(path string,value string) error  {
 	return err
 }
 
-func (r *etcdRegister) Get(path string) (string,error) {
+func (r *etcdRegister) Get(path string) (Node,error) {
 	res,err := r.client.Get(context.Background(),path,nil)
 	err = c.CheckErr(err)
-	var v string
+	var v Node
+	v.Key = r.path2key(path)
+	v.Path = path
 	if res!= nil && res.Node!=nil{
-		v = res.Node.Value
+		v.Value = res.Node.Value
 	}
 	return v,err
 }
 
-func (r *etcdRegister) GetChildren(path string) ([]string,error){
+func (r *etcdRegister) GetChildren(path string) ([]Node,error){
 	res,err := r.client.Get(context.Background(),path,&client.GetOptions{true,false,true})
 	err = c.CheckErr(err)
-	var v []string
+	var nodes []Node
 	if res!= nil && res.Node!=nil{
 		childs := res.Node.Nodes
 		for _ ,c := range childs{
-			v = append(v , c.Key)
+			var n Node
+			n.Key = r.path2key(c.Key)
+			n.Path = c.Key
+			n.Value = c.Value
+			nodes = append(nodes , n)
 		}
 	}
-	return v,err
+	return nodes,err
 }
 
 func (r *etcdRegister) Delete(path string) error  {
@@ -82,7 +88,7 @@ func (r *etcdRegister) Delete(path string) error  {
 
 func (r *etcdRegister) AddListener(path string , cancel <- chan int,
 					handler func(*client.Response))  {
-	watcher := r.client.Watcher(path,nil)
+	watcher := r.client.Watcher(path,&client.WatcherOptions{0,true})
 	go func(client.Watcher){
 		for {
 			select {

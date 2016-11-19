@@ -37,6 +37,7 @@ func TestEtcdRegister_Set(t *testing.T)  {
 func TestEtcdRegister_Delete(t *testing.T)  {
 	t.Log("set delete")
 	r := getRegister()
+	t.Log(r.Delete("/foo/bar"))
 	t.Log(r.Delete("/foo"))
 	t.Log(r.Get("/foo"))
 }

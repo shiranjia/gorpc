@@ -17,12 +17,12 @@ type Register interface {
 	/**
 	获得元素
 	 */
-	Get(path string) (string,error)
+	Get(path string) (Node,error)
 
 	/**
 	获得元素
 	 */
-	GetChildren(path string) ([]string,error)
+	GetChildren(path string) ([]Node,error)
 
 	/**
 	删除元素
