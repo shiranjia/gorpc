@@ -14,7 +14,7 @@ func TestIp(t *testing.T) {
 func TestGoRpc_RegisterServer(t *testing.T) {
 	rpc := NewGoRpc("http://127.0.0.1:2379")
 	tes := &Test{}
-	tes.Tostring(Request{"123"},&Response{"123"})
+	//tes.Tostring(Request{"123"},&Response{"123"})
 	rpc.RegisterServer(tes)
 	w := make(chan int)
 	<- w
@@ -22,10 +22,8 @@ func TestGoRpc_RegisterServer(t *testing.T) {
 
 func TestGoRpc_Call(t *testing.T) {
 	goRpc := NewGoRpc("http://127.0.0.1:2379")
-	resp := new(Response)
-	res  := new(Request)
-	res.Body = "resquest test"
-	f := Facade{"api.Test","Tostring",res,resp}
+	resp := &Response{}
+	f := Facade{"api.Test","Tostring",Request{"request test!!!"},resp}
 	goRpc.Call(f)
 	t.Log(resp.Body)
 }
