@@ -4,9 +4,11 @@ import (
 	"gorpc/pro"
 	"gorpc/server"
 	"gorpc/register"
-	"math/rand"
-	"strconv"
+	_ "math/rand"
 	"gorpc/utils"
+	"reflect"
+	"log"
+	"strings"
 )
 
 type goRpc struct {
@@ -22,9 +24,13 @@ func NewGoRpc(host string) *goRpc{
 	return  g
 }
 
-func (r *goRpc) RegisterServer(serviceName string,service interface{})  {
-	s := buildService(serviceName)
-	r.Register.Set(s.ServiceName,s.Host + strconv.Itoa(s.Port))
+func (r *goRpc) RegisterServer(service interface{})  {
+	t :=reflect.TypeOf(service)
+	serviceName := t.String()
+	serviceName = strings.Replace(serviceName,"*","",-1)
+	log.Println(serviceName)
+	//s := buildService(serviceName + "/" + utils.Ip())
+	r.Register.Set(serviceName + "/" + "127.0.0.1" +":7777" , "")
 	pro.NewServer(service)
 }
 
@@ -32,11 +38,15 @@ func (r *goRpc) ProxyServer()  {
 
 }
 
-func (r *goRpc) Call(s service) error  {
-	servers := r.servers[s.Service + "." + s.Method]
-	server := servers[rand.Int()%len(servers)]
-	client := pro.NewClient(server.Host)
-	return client.Call(s.Method,s.Args,s.Response)
+func (r *goRpc) Call(s Facade) error  {
+	nodes,err := r.Register.GetChildren(s.Service)
+	utils.CheckErr(err)
+	log.Println(nodes)
+	client := pro.NewClient(nodes[0].Key)
+	ss := strings.Split(s.Service,".")
+	m := ss[len(ss) - 1] + "." + s.Method
+	log.Println("call method :",m)
+	return client.Call(m,s.Args,s.Response)
 }
 
 func buildService(service string) server.Provider{

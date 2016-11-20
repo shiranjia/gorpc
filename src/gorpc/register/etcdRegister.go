@@ -58,7 +58,12 @@ func (r * etcdRegister) connect()  {
 }
 
 func (r *etcdRegister) Set(path string,value string) error  {
-	res ,err := r.client.Set(context.Background(),path,value,nil)
+	log.Println("set path:",r.key2path(path))
+	res ,err := r.client.Set(context.Background(),r.key2path(path),value,
+		&client.SetOptions{
+			PrevExist: client.PrevIgnore,
+			Dir:true,
+		})
 	err = c.CheckErr(err)
 	_ = res
 	return err
@@ -77,7 +82,7 @@ func (r *etcdRegister) Get(path string) (Node,error) {
 }
 
 func (r *etcdRegister) GetChildren(path string) ([]Node,error){
-	res,err := r.client.Get(context.Background(),path,&client.GetOptions{true,false,true})
+	res,err := r.client.Get(context.Background(),r.key2path(path),&client.GetOptions{true,false,true})
 	err = c.CheckErr(err)
 	var nodes []Node
 	if res!= nil && res.Node!=nil{
@@ -94,7 +99,10 @@ func (r *etcdRegister) GetChildren(path string) ([]Node,error){
 }
 
 func (r *etcdRegister) Delete(path string) error  {
-	res,err := r.client.Delete(context.Background(),path,nil)
+	res,err := r.client.Delete(context.Background(),path,&client.DeleteOptions{
+		Recursive : true,
+		Dir : true,
+	})
 	err = c.CheckErr(err)
 	_ = res
 	return err
@@ -132,5 +140,6 @@ func (r *etcdRegister) path2key(path string) string{
 }
 
 func(r *etcdRegister) key2path(key string) string{
-	return key
+	return r.rootPath + r.separator + key
 }
+

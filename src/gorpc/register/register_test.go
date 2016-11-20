@@ -33,9 +33,9 @@ func TestEtcdRegister_Set(t *testing.T)  {
 func TestEtcdRegister_Delete(t *testing.T)  {
 	t.Log("Delete test")
 	r := getRegister()
-	t.Log(r.Delete("/foo/bar"))
-	t.Log(r.Delete("/foo"))
-	t.Log(r.Get("/foo"))
+	t.Log(r.Delete("/gorpc"))
+	//t.Log(r.Delete("/"))
+	t.Log(r.GetChildren("/"))
 }
 
 func TestEtcdRegister_AddListener(t *testing.T) {
@@ -50,3 +50,4 @@ func TestEtcdRegister_AddListener(t *testing.T) {
 	r.Delete("/foo")
 	time.Sleep(3 * time.Second)
 }
+
