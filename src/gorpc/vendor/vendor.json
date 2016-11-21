@@ -9,6 +9,16 @@
 			"revisionTime": "2016-11-19T06:34:35Z"
 		},
 		{
+			"checksumSHA1": "eQeBivfiHELecANXiU9vYfFdjQU=",
+			"path": "github.com/coreos/etcd/pkg/pathutil",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "qd+I6M6ot7HOpADC8KNrW9xSurQ=",
+			"path": "github.com/coreos/etcd/pkg/types",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "gIrcwv233FUSVJ2jlArLB0jeLQE=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "faddd6128c66c4708f45fdc007f575f75e592a3c",
