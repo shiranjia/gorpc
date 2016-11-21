@@ -2,7 +2,6 @@ package api
 
 import (
 	"testing"
-	"log"
 	"gorpc/utils"
 	"net/rpc"
 )
@@ -57,15 +56,4 @@ func TestGoRpc_Call2RPC(t *testing.T) {
 	client.Call("Test.Tostring",res,resp)
 }
 
-type Test struct {}
-func (t *Test) Tostring(req Request,resp *Response)  error {
-	log.Println(req.Body)
-	resp.Body = "test"
-	return nil
-}
-type Test1 struct {}
-func (t *Test1) Tostring(req Request,resp *Response)  error {
-	log.Println(req.Body)
-	resp.Body = "test1"
-	return nil
-}
+
