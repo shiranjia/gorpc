@@ -48,7 +48,7 @@ func TestGoRpc_CallHTTP(t *testing.T) {
 }
 
 func TestGoRpc_Call2RPC(t *testing.T) {
-	client,err := rpc.Dial("tcp" , "127.0.0.1:7777")
+	client,err := rpc.Dial("tcp" , "127.0.0.1:1234")
 	resp := new(Response)
 	res  := new(Request)
 	res.Body = "resquest test"

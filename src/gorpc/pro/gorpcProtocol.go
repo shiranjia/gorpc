@@ -9,12 +9,14 @@ import (
 	"reflect"
 )
 
-func NewServer(service interface{}){
-	rpc.Register(service)
+func NewServer(service []interface{}){
+	for _ ,s := range service {
+		log.Println("register http service:",reflect.TypeOf(s).String())
+		rpc.Register(s)
+	}
 	listener,err := net.Listen("tcp","127.0.0.1:7777")
 	utils.CheckErr(err)
 	listen(listener)
-	log.Println("register service:",service)
 }
 
 func listen(l net.Listener){

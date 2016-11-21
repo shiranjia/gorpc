@@ -26,25 +26,40 @@ func NewGoRpc(host string) *goRpc{
 	return  g
 }
 
-func (r *goRpc) RegisterServer(service interface{})  {
-	t :=reflect.TypeOf(service)
-	serviceName := t.String()
-	serviceName = strings.Replace(serviceName,"*","",-1)
-	log.Println(serviceName)
-	//s := buildService(serviceName + "/" + utils.Ip())
-	r.Register.Set(serviceName + "/" + utils.Ip() +":1234" , "")
-	pro.NewServer(service)
+func (r *goRpc) RegisterServer(service ...interface{})  {
+	services := []interface{}{}
+	for _,ser := range service {
+		t := reflect.TypeOf(ser)
+		serviceName := t.String()
+		serviceName = strings.Replace(serviceName, "*", "", -1)
+		log.Println(serviceName)
+		r.Register.Set(serviceName + "/" + utils.Ip() + ":1234", "")
+		services = append(services,ser)
+	}
+	pro.NewServer(services)
 }
 
 func (r *goRpc) Call(s Facade) error  {
-	nodes,err := r.Register.GetChildren(s.Service)
-	utils.CheckErr(err)
-	log.Println(nodes)
-	client := pro.NewClient(nodes[0].Key)
-	ss := strings.Split(s.Service,".")
-	m := ss[len(ss) - 1] + "." + s.Method
-	log.Println("call method :",m)
-	return client.Call(m,s.Args,s.Response)
+	hosts := r.serversCache[s.Service]
+	var client *rpc.Client
+	var method string
+	if hosts == nil || len(hosts)==0{
+		nodes,err := r.Register.GetChildren(s.Service)
+		utils.CheckErr(err)
+		log.Println(nodes)
+		client = pro.NewClient(nodes[0].Key)
+		ss := strings.Split(s.Service,".")
+		method = ss[len(ss) - 1] + "." + s.Method
+		log.Println("call method :",method)
+		p := &server.Provider{nodes[0].Key,method}
+		r.serversCache[s.Service] = append(r.serversCache[s.Service],p)
+	}else {
+		prov := hosts[rand.Int() % len(hosts)]
+		client = pro.NewClient(prov.Host)
+		method = prov.Method
+		log.Println("point cache host:", prov.Host,"method:",prov.Method)
+	}
+	return client.Call(method,s.Args,s.Response)
 }
 
 func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
@@ -83,14 +98,6 @@ func (r *goRpc) CallHTTP(s Facade) error  {
 
 	return client.Call(method,s.Args,s.Response)
 }
-
-func buildService(service string) server.Provider{
-	s := server.Provider{}
-	s.Host = utils.Ip() + "1234"
-	return s
-}
-
-
 
 type Request struct {
 	Body interface{}
