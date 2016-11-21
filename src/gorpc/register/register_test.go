@@ -7,20 +7,20 @@ import (
 )
 
 func getRegister() Register  {
-	r := CreateEtcdRegister("http://127.0.0.1:2379")
+	r := CreateEtcdRegister("http://192.168.146.147:2379")
 	return r
 }
 
 func TestEtcdRegister_Get(t *testing.T)  {
 	t.Log("Get test")
 	r := getRegister()
-	t.Log(r.Get("/foo"))
+	t.Log(r.Get("/api.Test"))
 }
 
 func TestEtcdRegister_GetChildren(t *testing.T) {
 	t.Log("GetChildren test")
 	r := getRegister()
-	t.Log(r.GetChildren("/foo"))
+	t.Log(r.GetChildren("/"))
 }
 
 func TestEtcdRegister_Set(t *testing.T)  {

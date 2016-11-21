@@ -1,5 +1,8 @@
-package rpc
+package main
+
 
 func main() {
 
 }
+
+

@@ -61,6 +61,7 @@ func (r *etcdRegister) Set(path string,value string) error  {
 	log.Println("set path:",r.key2path(path))
 	res ,err := r.client.Set(context.Background(),r.key2path(path),value,
 		&client.SetOptions{
+			//TTL : 3,
 			PrevExist: client.PrevIgnore,
 			Dir:true,
 		})

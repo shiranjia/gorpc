@@ -9,17 +9,19 @@ import (
 	"reflect"
 	"log"
 	"strings"
+	"net/rpc"
+	"math/rand"
 )
 
 type goRpc struct {
-	servers map[string][]server.Provider `服务列表`
+	serversCache map[string][]*server.Provider `服务列表`
 	point server.Provider
 	register.Register
 }
 
 func NewGoRpc(host string) *goRpc{
 	g := &goRpc{}
-	g.servers = make(map[string][]server.Provider)
+	g.serversCache = make(map[string][]*server.Provider)
 	g.Register = register.CreateEtcdRegister(host)
 	return  g
 }
@@ -30,12 +32,8 @@ func (r *goRpc) RegisterServer(service interface{})  {
 	serviceName = strings.Replace(serviceName,"*","",-1)
 	log.Println(serviceName)
 	//s := buildService(serviceName + "/" + utils.Ip())
-	r.Register.Set(serviceName + "/" + "127.0.0.1" +":7777" , "")
+	r.Register.Set(serviceName + "/" + utils.Ip() +":1234" , "")
 	pro.NewServer(service)
-}
-
-func (r *goRpc) ProxyServer()  {
-
 }
 
 func (r *goRpc) Call(s Facade) error  {
@@ -49,10 +47,46 @@ func (r *goRpc) Call(s Facade) error  {
 	return client.Call(m,s.Args,s.Response)
 }
 
+func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
+	services := []interface{}{}
+	for _,ser := range service{
+		t :=reflect.TypeOf(ser)
+		serviceName := t.String()
+		serviceName = strings.Replace(serviceName,"*","",-1)
+		log.Println(serviceName)
+		r.Register.Set(serviceName + "/" + utils.Ip() +":1234" , "")
+		services = append(services,ser)
+	}
+	pro.NewHTTPServer(services)
+}
+
+func (r *goRpc) CallHTTP(s Facade) error  {
+	hosts := r.serversCache[s.Service]
+	var client *rpc.Client
+	var method string
+	if hosts == nil || len(hosts)==0{
+		nodes,err := r.Register.GetChildren(s.Service)
+		utils.CheckErr(err)
+		log.Println(nodes)
+		client = pro.NewHTTPClient(nodes[0].Key)
+		ss := strings.Split(s.Service,".")
+		method = ss[len(ss) - 1] + "." + s.Method
+		log.Println("call method :",method)
+		p := &server.Provider{nodes[0].Key,method}
+		r.serversCache[s.Service] = append(r.serversCache[s.Service],p)
+	}else {
+		prov := hosts[rand.Int() % len(hosts)]
+		client = pro.NewHTTPClient(prov.Host)
+		method = prov.Method
+		log.Println("point cache host:", prov.Host,"method:",prov.Method)
+	}
+
+	return client.Call(method,s.Args,s.Response)
+}
+
 func buildService(service string) server.Provider{
 	s := server.Provider{}
-	s.Port = 8888
-	s.Host = utils.Ip()
+	s.Host = utils.Ip() + "1234"
 	return s
 }
 
