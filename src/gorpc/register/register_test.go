@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/coreos/etcd/client"
 	"time"
+	"strings"
 )
 
 func getRegister() Register  {
@@ -41,13 +42,12 @@ func TestEtcdRegister_Delete(t *testing.T)  {
 func TestEtcdRegister_AddListener(t *testing.T) {
 	t.Log("AddListener test")
 	r := getRegister()
-	r.AddListener("/foo",make(chan int), func(c *client.Response) {
-		t.Log(c.Action," 》",c.Node)
+	r.AddListener("/gorpc/api.Test1",make(chan int), func(c *client.Response) {
+		path := strings.Split(c.Node.Key,"/")
+		t.Log(c.Action," 》",path[len(path)-1])
 	})
-	r.Set("/foo","asd")
-	r.Set("/foo","123")
-	r.Set("/foo/bar","123")
-	r.Delete("/foo")
+	r.Set("api.Test1/127.0.0.1:1234","asd")
+	r.Delete("api.Test1/127.0.0.1:1234")
 	time.Sleep(3 * time.Second)
 }
 

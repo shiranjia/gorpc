@@ -16,19 +16,22 @@ type etcdRegister struct {
 	 */
 	host string `服务地址`
 
-	rootPath string `根目录`
-
-	separator string `目录分隔符`
-
 	client client.KeysAPI
+
+	hosts []string	`保存服务列表，定时推送etcd`
+
+	updateInterval time.Duration	`心跳时间`
 }
 
 //构造函数
 func CreateEtcdRegister(host string) Register  {
 	var r Register
 	c.Try(func(){
-		etcd := &etcdRegister{}
-		etcd.host = host
+		etcd := &etcdRegister{
+			host : host,
+			updateInterval : 5 * time.Second,
+			hosts : []string{},
+		}
 		r = etcd
 		r.connect()
 	}, func(err interface{}) {
@@ -50,31 +53,46 @@ func (r * etcdRegister) connect()  {
 			log.Fatal(err)
 		}
 		r.client = client.NewKeysAPI(c)
-		r.rootPath = "/gorpc"
-		r.separator = "/"
 	},func(v interface{}){
 		log.Fatal("create etcd client err:",v)
 	})
 }
 
 func (r *etcdRegister) Set(path string,value string) error  {
-	log.Println("set path:",r.key2path(path))
-	res ,err := r.client.Set(context.Background(),r.key2path(path),value,
+	log.Println("set path:",c.Key2path(path))
+	res ,err := r.client.Set(context.Background(),c.Key2path(path),value,
 		&client.SetOptions{
-			//TTL : 3,
-			PrevExist: client.PrevIgnore,
-			Dir:true,
+			TTL : r.updateInterval + 10 * time.Second,
+			PrevExist : client.PrevIgnore,
 		})
-	err = c.CheckErr(err)
+	err = c.CheckErr("etcdRegister.Set",err)
 	_ = res
+	r.hosts = append(r.hosts,c.Key2path(path))
 	return err
+}
+
+func (r *etcdRegister) TimeTicker()  {
+	var ticker *time.Ticker = time.NewTicker(r.updateInterval)
+	go func(){
+		for range ticker.C{
+			for _ , h := range r.hosts{
+				res ,err := r.client.Set(context.Background(),h,"1",
+					&client.SetOptions{
+						TTL : r.updateInterval + 10 * time.Second,
+						PrevExist : client.PrevIgnore,
+					})
+				err = c.CheckErr("etcdRegister.TimeTicker",err)
+				_ = res
+			}
+		}
+	}()
 }
 
 func (r *etcdRegister) Get(path string) (Node,error) {
 	res,err := r.client.Get(context.Background(),path,nil)
-	err = c.CheckErr(err)
+	err = c.CheckErr("etcdRegister.Get",err)
 	var v Node
-	v.Key = r.path2key(path)
+	v.Key = c.Path2key(path)
 	v.Path = path
 	if res!= nil && res.Node!=nil{
 		v.Value = res.Node.Value
@@ -83,16 +101,16 @@ func (r *etcdRegister) Get(path string) (Node,error) {
 }
 
 func (r *etcdRegister) GetChildren(path string) ([]Node,error){
-	res,err := r.client.Get(context.Background(),r.key2path(path),&client.GetOptions{true,false,true})
-	err = c.CheckErr(err)
+	res,err := r.client.Get(context.Background(),c.Key2path(path),&client.GetOptions{true,false,true})
+	err = c.CheckErr("etcdRegister.GetChildren",err)
 	var nodes []Node
 	if res!= nil && res.Node!=nil{
 		childs := res.Node.Nodes
-		for _ ,c := range childs{
+		for _ ,child := range childs{
 			var n Node
-			n.Key = r.path2key(c.Key)
-			n.Path = c.Key
-			n.Value = c.Value
+			n.Key = c.Path2key(child.Key)
+			n.Path = child.Key
+			n.Value = child.Value
 			nodes = append(nodes , n)
 		}
 	}
@@ -100,47 +118,32 @@ func (r *etcdRegister) GetChildren(path string) ([]Node,error){
 }
 
 func (r *etcdRegister) Delete(path string) error  {
-	res,err := r.client.Delete(context.Background(),path,&client.DeleteOptions{
+	res,err := r.client.Delete(context.Background(),c.Key2path(path),&client.DeleteOptions{
 		Recursive : true,
-		Dir : true,
 	})
-	err = c.CheckErr(err)
+	err = c.CheckErr("etcdRegister.Delete",err)
 	_ = res
 	return err
 }
 
-func (r *etcdRegister) AddListener(path string , cancel <- chan int,
-					handler func(*client.Response))  {
+func (r *etcdRegister) Subscribe(path string , cancel <- chan int,
+					handler func(cli *client.Response))  {
 	watcher := r.client.Watcher(path,&client.WatcherOptions{0,true})
-	go func(client.Watcher){
-		for {
-			select {
-			case <- cancel:
-				log.Println("exit watcher")
-				return
-			default:{
-				res , err := watcher.Next(context.Background())
-				if err != nil{
-					log.Fatal(err)
-				}
-				handler(res)
+	for {
+		select {
+		case <- cancel:
+			log.Println("exit watcher")
+			return
+		default:{
+			res , err := watcher.Next(context.Background())
+			if err != nil{
+				log.Fatal(err)
 			}
-			}
+			handler(res)
 		}
-	}(watcher)
-}
-
-func (r *etcdRegister) path2key(path string) string{
-	ps := strings.Split(path,r.separator)
-	l := len(ps)
-	key := ps[0]
-	if l > 0 {
-		key = ps[l - 1]
+		}
 	}
-	return key
 }
 
-func(r *etcdRegister) key2path(key string) string{
-	return r.rootPath + r.separator + key
-}
+
 

@@ -5,11 +5,25 @@ import (
 	"net"
 	"fmt"
 	"os"
+	"strings"
 )
 
-func CheckErr(e error) error {
+const(
+	RANGE_ERROR	= "runtime error: index out of range"
+	RootPath	= "/gorpc"	//根目录
+	Separator	= "/"		//目录分隔符
+	//// include get, set, delete, update, create, compareAndSwap,
+	G		= "get"
+	S		= "set"
+	D		= "delete"
+	U		= "update"
+	C		= "create"
+	CompareAndSwap	="compareAndSwap"
+)
+
+func CheckErr(str string,e error) error {
 	if e!= nil{
-		log.Println("Err:",e)
+		log.Println(str,"Err:",e)
 	}
 	return e
 }
@@ -51,4 +65,18 @@ func Ip() string {
 		}
 	}
 	return ""
+}
+
+func Path2key(path string) string{
+	ps := strings.Split(path,Separator)
+	l := len(ps)
+	key := ps[0]
+	if l > 0 {
+		key = ps[l - 1]
+	}
+	return key
+}
+
+func Key2path(key string) string{
+	return RootPath + Separator + key
 }

@@ -32,17 +32,13 @@ type Register interface {
 	Delete(path string) error
 
 	/**
-	注册监听事件
+	订阅服务变化
 	 */
-	AddListener(path string  , cancel <- chan int, handler func(*client.Response))
+	Subscribe(path string  , cancel <- chan int, handler func(*client.Response))
 
 	/**
-	根据路径得到key
+	维持心跳
 	 */
-	path2key(path string) string
+	TimeTicker()
 
-	/**
-	根据key得到路径
-	 */
-	key2path(key string) string
 }
