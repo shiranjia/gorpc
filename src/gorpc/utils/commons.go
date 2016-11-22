@@ -18,6 +18,7 @@ const(
 	D		= "delete"
 	U		= "update"
 	C		= "create"
+	E		= "expire"
 	CompareAndSwap	="compareAndSwap"
 )
 
@@ -80,3 +81,4 @@ func Path2key(path string) string{
 func Key2path(key string) string{
 	return RootPath + Separator + key
 }
+

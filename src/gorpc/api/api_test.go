@@ -3,7 +3,6 @@ package api
 import (
 	"testing"
 	"gorpc/utils"
-	"time"
 )
 
 func TescdtIp(t *testing.T) {
@@ -42,7 +41,7 @@ func TestGoRpc_CallHTTP(t *testing.T) {
 		f := Facade{"api.Test1","Tostring",Request{"request test!!!"},resp}
 		goRpc.CallHTTP(f)
 		t.Log(resp.Body)
-		/*f.Args = Request{"asfafe!!!"}
+		f.Args = Request{"asfafe!!!"}
 		err := goRpc.CallHTTP(f)
 		utils.CheckErr("TestGoRpc_CallHTTP",err)
 		t.Log(resp.Body)
@@ -50,7 +49,7 @@ func TestGoRpc_CallHTTP(t *testing.T) {
 		f.Args = Request{"yyyyyyttttttttttt!!!"}
 		goRpc.CallHTTP(f)
 		utils.CheckErr("TestGoRpc_CallHTTP",err)
-		t.Log(resp.Body)*/
+		t.Log(resp.Body)
 	}()
 	//执行测试用例时不能阻塞测试用例进程，否则rpc句柄会一直阻塞
 	//time.Sleep(100 * time.Second)

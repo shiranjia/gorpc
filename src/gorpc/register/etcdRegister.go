@@ -129,6 +129,7 @@ func (r *etcdRegister) Delete(path string) error  {
 func (r *etcdRegister) Subscribe(path string , cancel <- chan int,
 					handler func(cli *client.Response))  {
 	watcher := r.client.Watcher(path,&client.WatcherOptions{0,true})
+	log.Println("订阅事件，目录：",path)
 	for {
 		select {
 		case <- cancel:

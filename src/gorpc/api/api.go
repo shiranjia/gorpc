@@ -136,32 +136,38 @@ func (r *goRpc) CallHTTP(s Facade) error  {
 }
 
 func subscribe(s Facade,r *goRpc){
-	r.Subscribe(utils.Key2path(s.Service),make(chan int), func(cl *client.Response) {
+	r.Subscribe(utils.Key2path(s.Service) , make(chan int), func(cl *client.Response) {
 		path := strings.Split(cl.Node.Key,"/")
 		hostAndPort := path[len(path)-1]
-		log.Println()
+		log.Println("收到事件：",cl.Action,cl.Node)
 		switch cl.Action {
 
 		case utils.S: r.updateServersCache(s.Service ,true ,hostAndPort)
 
-		case utils.D: r.updateServersCache(s.Service ,false ,hostAndPort)
+		case utils.E: r.updateServersCache(s.Service ,false ,hostAndPort)
 
 		}
 	})
 	log.Println("subscribe over")
 }
 
-func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string){
+func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string) {
 	if addOrDel{
-		r.lock <- 1
+		log.Println("set")
+		add := true
 		for _ , v := range r.serversCache[serviceName]{
 			if v == host{
-				return //已缓存
+				add = false
+				break//已缓存
 			}
 		}
-		r.serversCache[serviceName] = append(r.serversCache[serviceName],host)
-		<- r.lock
+		if add{
+			r.lock <- 1
+			r.serversCache[serviceName] = append(r.serversCache[serviceName],host)
+			<- r.lock
+		}
 	}else {
+		log.Println("delete")
 		for i,v := range r.serversCache[serviceName] {
 			if v == host{
 				r.lock <- 1
