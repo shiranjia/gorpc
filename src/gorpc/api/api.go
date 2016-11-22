@@ -42,7 +42,7 @@ func (r *goRpc) RegisterRPCServer(service ...interface{})  {
 		serviceName := t.String()
 		serviceName = strings.Replace(serviceName, "*", "", -1)
 		log.Println(serviceName)
-		r.Register.Set(serviceName + "/" + utils.Ip() + ":1234", "1")
+		r.Register.Set(serviceName + utils.Separator + utils.Ip() + ":1234", "1")
 		services = append(services,ser)
 	}
 	pro.NewServer(services)
@@ -89,7 +89,7 @@ func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
 		serviceName := t.String()
 		serviceName = strings.Replace(serviceName,"*","",-1)
 		log.Println(serviceName)
-		r.Register.Set(serviceName + "/" + utils.Ip() +":1234" , "")
+		r.Register.Set(serviceName + utils.Separator + utils.Ip() +":1234" , "")
 		services = append(services,ser)
 	}
 	go pro.NewHTTPServer(services)//注册服务
@@ -171,7 +171,7 @@ func  (r *goRpc)  cacheServer(nodes []register.Node,s Facade){
  */
 func subscribe(s Facade,r *goRpc){
 	r.Subscribe(utils.Key2path(s.Service) , make(chan int), func(cl *client.Response) {
-		path := strings.Split(cl.Node.Key,"/")
+		path := strings.Split(cl.Node.Key,utils.Separator)
 		hostAndPort := path[len(path)-1]
 		log.Println("收到事件：",cl.Action,cl.Node)
 		switch cl.Action {
