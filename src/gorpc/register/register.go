@@ -37,7 +37,7 @@ type Register interface {
 	Subscribe(path string  , cancel <- chan int, handler func(*client.Response))
 
 	/**
-	维持心跳
+	维持心跳  etcd需要自己维持心跳保持临时节点有效
 	 */
 	TimeTicker()
 

@@ -12,7 +12,7 @@ const(
 	RANGE_ERROR	= "runtime error: index out of range"
 	RootPath	= "/gorpc"	//根目录
 	Separator	= "/"		//目录分隔符
-	//// include get, set, delete, update, create, compareAndSwap,
+	//// include get, set, delete, update, create, compareAndSwap, etcd可订阅事件
 	G		= "get"
 	S		= "set"
 	D		= "delete"
@@ -22,6 +22,9 @@ const(
 	CompareAndSwap	="compareAndSwap"
 )
 
+/**
+处理错误
+ */
 func CheckErr(str string,e error) error {
 	if e!= nil{
 		log.Println(str,"Err:",e)
@@ -29,6 +32,9 @@ func CheckErr(str string,e error) error {
 	return e
 }
 
+/**
+支持动态传的参数的错误处理
+ */
 func HandlerErr(e error , handler func(interface{}))  {
 	if e!= nil{
 		log.Println("Err:",e)
@@ -38,6 +44,9 @@ func HandlerErr(e error , handler func(interface{}))  {
 	}
 }
 
+/**
+模拟 try catch 语句块
+ */
 func Try(do func(),handler func(interface{}))  {
 	defer func(){
 		if err := recover();err != nil{
@@ -47,6 +56,9 @@ func Try(do func(),handler func(interface{}))  {
 	do()
 }
 
+/**
+获取本机ip
+ */
 func Ip() string {
 	addrs, err := net.InterfaceAddrs()
 

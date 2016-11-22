@@ -4,7 +4,7 @@ import (
 	"log"
 	"fmt"
 )
-
+//测试使用注册服务
 type Test struct {}
 func (t *Test) Tostring(req Request,resp *Response)  error {
 	log.Println(req.Body)

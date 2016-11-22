@@ -40,6 +40,9 @@ func CreateEtcdRegister(host string) Register  {
 	return r
 }
 
+/**
+初始化链接
+ */
 func (r * etcdRegister) connect()  {
 	c.Try(func(){
 		cfg := client.Config{
@@ -71,6 +74,9 @@ func (r *etcdRegister) Set(path string,value string) error  {
 	return err
 }
 
+/**
+保持心跳，维持临时节点
+ */
 func (r *etcdRegister) TimeTicker()  {
 	var ticker *time.Ticker = time.NewTicker(r.updateInterval)
 	go func(){
@@ -126,6 +132,9 @@ func (r *etcdRegister) Delete(path string) error  {
 	return err
 }
 
+/**
+订阅路径变更
+ */
 func (r *etcdRegister) Subscribe(path string , cancel <- chan int,
 					handler func(cli *client.Response))  {
 	watcher := r.client.Watcher(path,&client.WatcherOptions{0,true})

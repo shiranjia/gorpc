@@ -2,7 +2,6 @@ package api
 
 import (
 	"gorpc/pro"
-	"gorpc/server"
 	"gorpc/register"
 	 "math/rand"
 	"gorpc/utils"
@@ -17,12 +16,13 @@ import (
 
 type goRpc struct {
 	serversCache map[string][]string `服务列表`
-	point server.Provider
-	register.Register
-	lock chan int
-
+	register.Register		`注册中心`
+	lock chan int			`更新服务缓存锁`
 }
 
+/**
+构造服务api
+ */
 func NewGoRpc(host string) *goRpc{
 	g := &goRpc{
 		serversCache : make(map[string][]string),
@@ -32,7 +32,10 @@ func NewGoRpc(host string) *goRpc{
 	return  g
 }
 
-func (r *goRpc) RegisterServer(service ...interface{})  {
+/**
+注册rpc协议服务
+ */
+func (r *goRpc) RegisterRPCServer(service ...interface{})  {
 	services := []interface{}{}
 	for _,ser := range service {
 		t := reflect.TypeOf(ser)
@@ -45,7 +48,10 @@ func (r *goRpc) RegisterServer(service ...interface{})  {
 	pro.NewServer(services)
 }
 
-func (r *goRpc) Call(s Facade) error  {
+/**
+远程调用  go rpc协议
+ */
+func (r *goRpc) CallRPC(s Facade) error  {
 	hosts := r.serversCache[s.Service]
 	var client *rpc.Client
 	var method string
@@ -64,11 +70,7 @@ func (r *goRpc) Call(s Facade) error  {
 			return err
 		}()
 		client = pro.NewClient(nodes[0].Key)
-		hosts := []string{}
-		for _ , h := range nodes {
-			hosts = append(hosts,h.Key)
-		}
-		r.serversCache[s.Service] = append(r.serversCache[s.Service],hosts...)
+		r.cacheServer(nodes,s)//缓存
 	}else {
 		host := hosts[rand.Int() % len(hosts)]
 		client = pro.NewClient(host)
@@ -77,6 +79,9 @@ func (r *goRpc) Call(s Facade) error  {
 	return client.Call(method,s.Args,s.Response)
 }
 
+/**
+注册http协议服务
+ */
 func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
 	services := []interface{}{}
 	for _,ser := range service{
@@ -92,6 +97,9 @@ func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
 	r.TimeTicker()//打开心跳
 }
 
+/**
+远程调用 http协议
+ */
 func (r *goRpc) CallHTTP(s Facade) error  {
 	hosts := r.serversCache[s.Service]
 	var cli *rpc.Client
@@ -115,14 +123,8 @@ func (r *goRpc) CallHTTP(s Facade) error  {
 		if hosts == nil {//初次调用 ，初始订阅服务变化
 			go subscribe(s,r)
 		}
-		//加入本地缓存
-		log.Println("call method :",s.Method)
-		hosts := []string{}
-		for _ , h := range nodes {
-			hosts = append(hosts,h.Key)
-		}
-		r.serversCache[s.Service] = append(r.serversCache[s.Service],hosts...)
-		log.Println("serversCache :",r.serversCache)
+		r.cacheServer(nodes,s)//缓存
+
 	}else {
 		host := hosts[rand.Int() % len(hosts)]
 		cli = pro.NewHTTPClient(host)
@@ -135,6 +137,38 @@ func (r *goRpc) CallHTTP(s Facade) error  {
 	return cli.Call(className + "." + s.Method,s.Args,s.Response)
 }
 
+/**
+注册服务 json协议
+ */
+func (r *goRpc) RegisterJsonServer(service ...interface{}){
+
+}
+
+/**
+远程调用 json协议
+ */
+func (r *goRpc) CallJSON(s Facade) error    {
+
+	return nil
+}
+
+/**
+缓存服务
+ */
+func  (r *goRpc)  cacheServer(nodes []register.Node,s Facade){
+	//加入本地缓存
+	log.Println("call method :",s.Method)
+	hosts := []string{}
+	for _ , h := range nodes {
+		hosts = append(hosts,h.Key)
+	}
+	r.serversCache[s.Service] = append(r.serversCache[s.Service],hosts...)
+	log.Println("serversCache :",r.serversCache)
+}
+
+/**
+订阅服务注册中心
+ */
 func subscribe(s Facade,r *goRpc){
 	r.Subscribe(utils.Key2path(s.Service) , make(chan int), func(cl *client.Response) {
 		path := strings.Split(cl.Node.Key,"/")
@@ -151,6 +185,9 @@ func subscribe(s Facade,r *goRpc){
 	log.Println("subscribe over")
 }
 
+/**
+更新本地服务缓存
+ */
 func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string) {
 	if addOrDel{
 		log.Println("set")
