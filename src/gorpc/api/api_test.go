@@ -12,7 +12,7 @@ func TescdtIp(t *testing.T) {
 func TestGoRpc_RegisterServer(t *testing.T) {
 	rpc := NewGoRpc("http://192.168.146.147:2379")
 	tes := &Test{}
-	rpc.RegisterServer(tes)
+	rpc.RegisterRPCServer(tes)
 	w := make(chan int)
 	<- w
 }
@@ -21,7 +21,7 @@ func TestGoRpc_Call(t *testing.T) {
 	goRpc := NewGoRpc("http://192.168.146.147:2379")
 	resp := &Response{}
 	f := Facade{"main.Test","Tostring",Request{"request test!!!"},resp}
-	goRpc.Call(f)
+	goRpc.CallRPC(f)
 	t.Log(resp.Body)
 }
 
