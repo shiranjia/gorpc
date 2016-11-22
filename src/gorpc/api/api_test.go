@@ -20,7 +20,12 @@ func TestGoRpc_RegisterServer(t *testing.T) {
 func TestGoRpc_Call(t *testing.T) {
 	goRpc := NewGoRpc("http://192.168.146.147:2379")
 	resp := &Response{}
-	f := Facade{"main.Test","Tostring",Request{"request test!!!"},resp}
+	f := Facade{
+		Service:"api.Test1",
+		Method:"Tostring",
+		Args:Request{"asdasdttt"},
+		Response:resp,
+	}
 	goRpc.CallRPC(f)
 	t.Log(resp.Body)
 }
@@ -38,7 +43,12 @@ func TestGoRpc_CallHTTP(t *testing.T) {
 	goRpc := NewGoRpc("http://192.168.146.147:2379")
 	func(){
 		resp := &Response{}
-		f := Facade{"api.Test1","Tostring",Request{"request test!!!"},resp}
+		f := Facade{
+			Service:"api.Test1",
+			Method:"Tostring",
+			Args:Request{"asdasdttt"},
+			Response:resp,
+		}
 		goRpc.CallHTTP(f)
 		t.Log(resp.Body)
 		f.Args = Request{"asfafe!!!"}
