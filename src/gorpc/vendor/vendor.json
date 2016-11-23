@@ -19,6 +19,11 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "Mjf2feJENP5iXb1cl/BQFmV2HvA=",
+			"path": "github.com/powerman/rpc-codec/jsonrpc2",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "gIrcwv233FUSVJ2jlArLB0jeLQE=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "faddd6128c66c4708f45fdc007f575f75e592a3c",
