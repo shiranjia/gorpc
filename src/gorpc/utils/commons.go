@@ -9,7 +9,6 @@ import (
 )
 
 const(
-	RANGE_ERROR	= "runtime error: index out of range"
 	RootPath	= "/gorpc"	//根目录
 	Separator	= "/"		//目录分隔符
 	//// include get, set, delete, update, create, compareAndSwap, etcd可订阅事件

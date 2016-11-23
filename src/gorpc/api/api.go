@@ -44,7 +44,7 @@ func (r *goRpc) RegisterRPCServer(service ...interface{})  {
 远程调用  go rpc协议
  */
 func (r *goRpc) CallRPC(s Facade) error  {
-	s.Service = "*"+s.Service
+	s.Service = "*" + s.Service
 	host,_ := r.getHost(s)
 	client := pro.NewRPCClient(host)
 	class := strings.Split(s.Service,".")
@@ -194,6 +194,13 @@ func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string
 	}
 
 	log.Println("serversCache changed:",serviceName,r.serversCache[serviceName])
+}
+
+/**
+调用统计
+ */
+func (r *goRpc) invokStatistics( )  {
+
 }
 
 type Request struct {

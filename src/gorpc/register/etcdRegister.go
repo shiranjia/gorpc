@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 	"strings"
+	"gorpc/service"
+	"strconv"
 )
 
 type etcdRegister struct {
@@ -18,7 +20,7 @@ type etcdRegister struct {
 
 	client client.KeysAPI
 
-	hosts []string	`保存服务列表，定时推送etcd`
+	hosts []*service.Provider	`保存服务列表，定时推送etcd`
 
 	updateInterval time.Duration	`心跳时间`
 }
@@ -30,7 +32,7 @@ func CreateEtcdRegister(host string) Register  {
 		etcd := &etcdRegister{
 			host : host,
 			updateInterval : 5 * time.Second,
-			hosts : []string{},
+			hosts : []*service.Provider{},
 		}
 		r = etcd
 		r.connect()
@@ -62,7 +64,8 @@ func (r * etcdRegister) connect()  {
 }
 
 func (r *etcdRegister) Set(path string,value string) error  {
-	log.Println("set path:",c.Key2path(path))
+	address := c.Key2path(path)
+	log.Println("set path:",address)
 	res ,err := r.client.Set(context.Background(),c.Key2path(path),value,
 		&client.SetOptions{
 			TTL : r.updateInterval + 10 * time.Second,
@@ -70,7 +73,10 @@ func (r *etcdRegister) Set(path string,value string) error  {
 		})
 	err = c.CheckErr("etcdRegister.Set",err)
 	_ = res
-	r.hosts = append(r.hosts,c.Key2path(path))
+	r.hosts = append(r.hosts,&service.Provider{
+		Address:address,
+		Invoke:0,
+	})
 	return err
 }
 
@@ -82,7 +88,7 @@ func (r *etcdRegister) TimeTicker()  {
 	go func(){
 		for range ticker.C{
 			for _ , h := range r.hosts{
-				res ,err := r.client.Set(context.Background(),h,"1",
+				res ,err := r.client.Set(context.Background(),h.Address,strconv.Itoa(h.Invoke),
 					&client.SetOptions{
 						TTL : r.updateInterval + 10 * time.Second,
 						PrevExist : client.PrevIgnore,
