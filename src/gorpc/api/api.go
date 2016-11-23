@@ -114,7 +114,7 @@ func (r *goRpc) getHost(s Facade) (string,error)  {
 		utils.CheckErr("api.CallHTTP",err)
 		log.Println(nodes)
 		if len(nodes)==0{
-			e := errors.New("call rpc error : no alive provider")
+			e := errors.New("call rpc error : no alive provider:" + s.Service)
 			log.Println(e.Error())
 			return "",e
 		}
@@ -169,7 +169,7 @@ func subscribe(s Facade,r *goRpc){
  */
 func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string) {
 	if addOrDel{
-		log.Println("set")
+		log.Println(utils.S)
 		add := true
 		for _ , v := range r.serversCache[serviceName]{
 			if v == host{
@@ -183,7 +183,7 @@ func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string
 			<- r.lock
 		}
 	}else {
-		log.Println("delete")
+		log.Println(utils.D)
 		for i,v := range r.serversCache[serviceName] {
 			if v == host{
 				r.lock <- 1
