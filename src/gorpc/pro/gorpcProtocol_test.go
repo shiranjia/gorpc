@@ -87,6 +87,27 @@ func TestNewJSON2Client(t *testing.T) {
 	fmt.Printf("Sum(3,5)=%s\n", reply)
 }
 
+func TestNewHttpJson2rpcServer(t *testing.T) {
+	t.Log("test HttpJson2rpcServer")
+	NewHttpJson2rpcServer([]interface{}{&ExampleSvc{}})
+	w := make(chan int)
+	<- w
+}
+
+func TestNewHttpJson2rpcClient(t *testing.T) {
+	t.Log("test httpJson2rpcClient")
+	// Server provide a TCP transport.
+	host := "127.0.0.1:1235"
+	client := NewHttpJson2rpcClient(host)
+	defer client.Close()
+	reply := &Response{}
+	err := client.Call("ExampleSvc.Sum", [2]int{3 , 5}, reply)
+	if err!=nil{
+		t.Log(err)
+	}
+	fmt.Printf("Sum(3,5)=%s\n", reply)
+}
+
 type ExampleSvc struct{}
 func (*ExampleSvc) Sum(vals [2]int, res *Response) error {
 	fmt.Printf("arg1=%d,arg2=%d",vals[0],vals[1])

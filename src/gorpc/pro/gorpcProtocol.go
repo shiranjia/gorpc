@@ -102,3 +102,23 @@ func NewJSON2Client(host string) *jsonrpc2.Client  {
 	utils.CheckErr("gorpcProtocol.NewJSON2Client",err)
 	return client
 }
+
+func NewHttpJson2rpcServer(service [] interface{}) {
+	server := rpc.NewServer()
+	for _,s := range service{
+		log.Println("register sttpJson2rpc service:",reflect.TypeOf(s).String())
+		err := server.Register(s)
+		utils.CheckErr("gorpcProtocol.NewHttpJson2rpcServer.Register",err)
+	}
+	// Server provide a HTTP transport on /rpc endpoint.
+	http.Handle("/rpc", jsonrpc2.HTTPHandler(server))
+	lnHTTP, err := net.Listen("tcp", ":1235")
+	utils.CheckErr("gorpcProtocol.NewHttpJson2rpcServer",err)
+	go http.Serve(lnHTTP, nil)
+}
+
+func NewHttpJson2rpcClient(host string) *jsonrpc2.Client {
+	// Client use HTTP transport.
+	clientHTTP := jsonrpc2.NewHTTPClient("http://" + host + "/rpc")
+	return clientHTTP
+}
