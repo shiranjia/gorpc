@@ -5,10 +5,6 @@ import (
 	"gorpc/utils"
 )
 
-func TescdtIp(t *testing.T) {
-	t.Log(utils.Ip())
-}
-
 func TestGoRpc_RegisterServer(t *testing.T) {
 	rpc := NewGoRpc("http://192.168.146.147:2379")
 	tes := &Test{}
@@ -21,7 +17,7 @@ func TestGoRpc_Call(t *testing.T) {
 	goRpc := NewGoRpc("http://192.168.146.147:2379")
 	resp := &Response{}
 	f := Facade{
-		Service:"api.Test1",
+		Service:"api.Test",
 		Method:"Tostring",
 		Args:Request{"asdasdttt"},
 		Response:resp,
@@ -42,24 +38,23 @@ func TestGoRpc_RegisterHTTPServer(t *testing.T) {
 func TestGoRpc_CallHTTP(t *testing.T) {
 	goRpc := NewGoRpc("http://192.168.146.147:2379")
 	func(){
-		resp := &Response{}
 		f := Facade{
 			Service:"api.Test1",
 			Method:"Tostring",
 			Args:Request{"asdasdttt"},
-			Response:resp,
+			Response:&Response{},
 		}
 		goRpc.CallHTTP(f)
-		t.Log(resp.Body)
+		t.Log(f.Response)
 		f.Args = Request{"asfafe!!!"}
 		err := goRpc.CallHTTP(f)
 		utils.CheckErr("TestGoRpc_CallHTTP",err)
-		t.Log(resp.Body)
+		t.Log(f.Response)
 
 		f.Args = Request{"yyyyyyttttttttttt!!!"}
 		goRpc.CallHTTP(f)
 		utils.CheckErr("TestGoRpc_CallHTTP",err)
-		t.Log(resp.Body)
+		t.Log(f.Response)
 	}()
 	//执行测试用例时不能阻塞测试用例进程，否则rpc句柄会一直阻塞
 	//time.Sleep(100 * time.Second)

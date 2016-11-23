@@ -8,8 +8,6 @@ import (
 	"reflect"
 	"log"
 	"strings"
-	"net/rpc"
-	"fmt"
 	"errors"
 	"github.com/coreos/etcd/client"
 )
@@ -36,63 +34,32 @@ func NewGoRpc(host string) *goRpc{
 注册rpc协议服务
  */
 func (r *goRpc) RegisterRPCServer(service ...interface{})  {
-	services := []interface{}{}
-	for _,ser := range service {
-		t := reflect.TypeOf(ser)
-		serviceName := t.String()
-		serviceName = strings.Replace(serviceName, "*", "", -1)
-		log.Println(serviceName)
-		r.Register.Set(serviceName + utils.Separator + utils.Ip() + ":1234", "1")
-		services = append(services,ser)
-	}
-	pro.NewServer(services)
+	r.registerService(service)
+	pro.NewRPCServer(service)
+	log.Println("register over")
+	r.TimeTicker()//打开心跳
 }
 
 /**
 远程调用  go rpc协议
  */
 func (r *goRpc) CallRPC(s Facade) error  {
-	hosts := r.serversCache[s.Service]
-	var client *rpc.Client
-	var method string
-	if hosts == nil || len(hosts)==0{
-		nodes,err := r.Register.GetChildren(s.Service)
-		utils.CheckErr("api.Call",err)
-		log.Println(nodes)
-		defer func() error{
-			if err:=recover();err!=nil{
-				if fmt.Sprint(err) == utils.RANGE_ERROR{
-					log.Println("call rpc error : no alive provider")
-				}else {
-					log.Println("call rpc error : ",err)
-				}
-			}
-			return err
-		}()
-		client = pro.NewClient(nodes[0].Key)
-		r.cacheServer(nodes,s)//缓存
-	}else {
-		host := hosts[rand.Int() % len(hosts)]
-		client = pro.NewClient(host)
-		log.Println("point cache host:", host,"method:",s.Method)
-	}
-	return client.Call(method,s.Args,s.Response)
+	s.Service = "*"+s.Service
+	host,_ := r.getHost(s)
+	client := pro.NewRPCClient(host)
+	class := strings.Split(s.Service,".")
+	className := class[len(class)-1]
+	defer client.Close()
+	//log.Println("cli.Call")
+	return client.Call(className + "." + s.Method,s.Args,s.Response)
 }
 
 /**
 注册http协议服务
  */
 func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
-	services := []interface{}{}
-	for _,ser := range service{
-		t :=reflect.TypeOf(ser)
-		serviceName := t.String()
-		serviceName = strings.Replace(serviceName,"*","",-1)
-		log.Println(serviceName)
-		r.Register.Set(serviceName + utils.Separator + utils.Ip() +":1234" , "")
-		services = append(services,ser)
-	}
-	go pro.NewHTTPServer(services)//注册服务
+	r.registerService(service)
+	go pro.NewHTTPServer(service)//注册服务
 	log.Println("register over")
 	r.TimeTicker()//打开心跳
 }
@@ -101,39 +68,12 @@ func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
 远程调用 http协议
  */
 func (r *goRpc) CallHTTP(s Facade) error  {
-	hosts := r.serversCache[s.Service]
-	var cli *rpc.Client
-	if hosts == nil || len(hosts)==0{
-		nodes,err := r.Register.GetChildren(s.Service)
-		utils.CheckErr("api.CallHTTP",err)
-		log.Println(nodes)
-		if len(nodes)==0{
-			e := errors.New("call rpc error : no alive provider")
-			log.Println(e.Error())
-			return e
-		}
-		defer func() error{
-			if err:=recover();err!=nil{
-					log.Println("call rpc error : ",err)
-			}
-			return err
-		}()
-		log.Println("call host :",nodes[0].Key)
-		cli = pro.NewHTTPClient(nodes[0].Key)
-		if hosts == nil {//初次调用 ，初始订阅服务变化
-			go subscribe(s,r)
-		}
-		r.cacheServer(nodes,s)//缓存
-
-	}else {
-		host := hosts[rand.Int() % len(hosts)]
-		cli = pro.NewHTTPClient(host)
-		log.Println("point cache host:", host,"method:",s.Method)
-	}
+	s.Service = "*"+s.Service
+	host,_ := r.getHost(s)
+	cli := pro.NewHTTPClient(host)
 	class := strings.Split(s.Service,".")
 	className := class[len(class)-1]
 	defer cli.Close()
-	//log.Println("cli.Call")
 	return cli.Call(className + "." + s.Method,s.Args,s.Response)
 }
 
@@ -150,6 +90,45 @@ func (r *goRpc) RegisterJsonServer(service ...interface{}){
 func (r *goRpc) CallJSON(s Facade) error    {
 
 	return nil
+}
+
+/**
+向注册中心注册服务
+ */
+func(r *goRpc) registerService(service []interface{}){
+	for _,ser := range service{
+		t :=reflect.TypeOf(ser)
+		serviceName := t.String()
+		log.Println(serviceName)
+		r.Register.Set(serviceName + utils.Separator + utils.Ip() +":1234" , "")
+	}
+}
+
+/**
+从已注册服务列表中取出一个
+ */
+func (r *goRpc) getHost(s Facade) (string,error)  {
+	hosts := r.serversCache[s.Service]
+	if hosts == nil || len(hosts)==0{
+		nodes,err := r.Register.GetChildren(s.Service)
+		utils.CheckErr("api.CallHTTP",err)
+		log.Println(nodes)
+		if len(nodes)==0{
+			e := errors.New("call rpc error : no alive provider")
+			log.Println(e.Error())
+			return "",e
+		}
+		log.Println("call host :",nodes[0].Key)
+		if hosts == nil {//初次调用 ，初始订阅服务变化
+			go subscribe(s,r)
+		}
+		r.cacheServer(nodes,s)//缓存
+		return nodes[0].Key,nil
+	}else {
+		host := hosts[rand.Int() % len(hosts)]
+		log.Println("point cache host:", host,"method:",s.Method)
+		return host,nil
+	}
 }
 
 /**

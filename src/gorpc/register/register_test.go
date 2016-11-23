@@ -42,7 +42,7 @@ func TestEtcdRegister_Delete(t *testing.T)  {
 func TestEtcdRegister_AddListener(t *testing.T) {
 	t.Log("AddListener test")
 	r := getRegister()
-	r.AddListener("/gorpc/api.Test1",make(chan int), func(c *client.Response) {
+	r.Subscribe("/gorpc/api.Test1",make(chan int), func(c *client.Response) {
 		path := strings.Split(c.Node.Key,"/")
 		t.Log(c.Action," 》",path[len(path)-1])
 	})
