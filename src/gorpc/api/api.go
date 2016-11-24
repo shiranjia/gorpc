@@ -20,7 +20,6 @@ package api
 import (
 	"gorpc/pro"
 	"gorpc/register"
-	 "math/rand"
 	"gorpc/utils"
 	"reflect"
 	"log"
@@ -28,6 +27,7 @@ import (
 	"errors"
 	"github.com/coreos/etcd/client"
 	"gorpc/service"
+	"net/rpc"
 )
 
 type goRpc struct {
@@ -104,13 +104,34 @@ func (r *goRpc) registerRPCServer(service []interface{},protocol string)  {
  */
 func (r *goRpc) callRPC(s Facade) error  {
 	s.Service = "*" + s.Service
-	host,_ := r.getHost(s)
-	client := pro.NewRPCClient(host)
-	class := strings.Split(s.Service,".")
-	className := class[len(class)-1]
-	defer client.Close()
-	//log.Println("cli.Call")
-	return client.Call(className + "." + s.Method,s.Args,s.Response)
+	host,index,err := r.getHost(s)
+	if err != nil{
+		return err
+	}
+	method := getMethodName(s)
+	var cli *rpc.Client
+	var e error
+	utils.Try(func(){
+		cli := pro.NewRPCClient(host)
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	},func(err interface{}){
+		log.Println("failover,fail host :",host)
+		hosts := r.serversCache[s.Service]
+		if len(hosts) == 0{
+			log.Println("api.callRPC no alive service:",s.Service)
+		}
+		index = index +1
+		if index < len(hosts){
+			cli = pro.NewRPCClient(hosts[index])
+		}else{
+			cli = pro.NewRPCClient(hosts[0])
+		}
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	})
+
+	return e
 }
 
 /**
@@ -125,13 +146,35 @@ func (r *goRpc) registerHTTPServer(service []interface{},protocol string)  {
 远程调用 http协议
  */
 func (r *goRpc) callHTTP(s Facade) error  {
-	s.Service = "*"+s.Service
-	host,_ := r.getHost(s)
-	cli := pro.NewHTTPClient(host)
-	class := strings.Split(s.Service,".")
-	className := class[len(class)-1]
-	defer cli.Close()
-	return cli.Call(className + "." + s.Method,s.Args,s.Response)
+	s.Service = "*" + s.Service
+	host,index,err := r.getHost(s)
+	if err != nil{
+		return err
+	}
+	method := getMethodName(s)
+	var cli *rpc.Client
+	var e error
+	utils.Try(func(){
+		cli := pro.NewHTTPClient(host)
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	},func(err interface{}){
+		log.Println("failover,fail host :",host)
+		hosts := r.serversCache[s.Service]
+		if len(hosts) == 0{
+			log.Println("api.callHTTP no alive service:",s.Service)
+		}
+		index = index +1
+		if index < len(hosts){
+			cli = pro.NewHTTPClient(hosts[index])
+		}else{
+			cli = pro.NewHTTPClient(hosts[0])
+		}
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	})
+
+	return e
 }
 
 /**
@@ -146,13 +189,35 @@ func (r *goRpc) registerJsonServer(service []interface{},protocol string){
 远程调用 json协议
  */
 func (r *goRpc) callJson(s Facade) error    {
-	s.Service = "*"+s.Service
-	host,_ := r.getHost(s)
-	cli := pro.NewJSONClient(host)
-	class := strings.Split(s.Service,".")
-	className := class[len(class)-1]
-	defer cli.Close()
-	return cli.Call(className + "." + s.Method,s.Args,s.Response)
+	s.Service = "*" + s.Service
+	host,index,err := r.getHost(s)
+	if err != nil{
+		return err
+	}
+	method := getMethodName(s)
+	var cli *rpc.Client
+	var e error
+	utils.Try(func(){
+		cli := pro.NewJSONClient(host)
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	},func(err interface{}){
+		log.Println("failover,fail host :",host)
+		hosts := r.serversCache[s.Service]
+		if len(hosts) == 0{
+			log.Println("api.callJson no alive service:",s.Service)
+		}
+		index = index +1
+		if index < len(hosts){
+			cli = pro.NewJSONClient(hosts[index])
+		}else{
+			cli = pro.NewJSONClient(hosts[0])
+		}
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	})
+
+	return e
 }
 
 /**
@@ -167,13 +232,35 @@ func (r *goRpc) registerJson2RpcServer(service []interface{},protocol string){
 远程调用 json2rpc 协议
  */
 func (r *goRpc) callJson2Rpc(s Facade) error    {
-	s.Service = "*"+s.Service
-	host,_ := r.getHost(s)
-	cli := pro.NewJSON2Client(host)
-	class := strings.Split(s.Service,".")
-	className := class[len(class)-1]
-	defer cli.Close()
-	return cli.Call(className + "." + s.Method,s.Args,s.Response)
+	s.Service = "*" + s.Service
+	host,index,err := r.getHost(s)
+	if err != nil{
+		return err
+	}
+	method := getMethodName(s)
+	var cli *rpc.Client
+	var e error
+	utils.Try(func(){
+		cli := pro.NewJSON2Client(host)
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	},func(err interface{}){
+		log.Println("failover,fail host :",host)
+		hosts := r.serversCache[s.Service]
+		if len(hosts) == 0{
+			log.Println("api.callJson2Rpc no alive service:",s.Service)
+		}
+		index = index +1
+		if index < len(hosts){
+			cli = pro.NewJSON2Client(hosts[index])
+		}else{
+			cli = pro.NewJSON2Client(hosts[0])
+		}
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	})
+
+	return e
 }
 
 /**
@@ -188,13 +275,40 @@ func (r *goRpc) registerJson2RpcHttpServer(service []interface{},protocol string
 远程调用 json2rpc http 协议
  */
 func (r *goRpc) callJson2RpcHttp(s Facade) error    {
-	s.Service = "*"+s.Service
-	host,_ := r.getHost(s)
-	cli := pro.NewHttpJson2rpcClient(host)
+	s.Service = "*" + s.Service
+	host,index,err := r.getHost(s)
+	if err != nil{
+		return err
+	}
+	method := getMethodName(s)
+	var cli *rpc.Client
+	var e error
+	utils.Try(func(){
+		cli := pro.NewHttpJson2rpcClient(host)
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	},func(err interface{}){
+		log.Println("failover,fail host :",host)
+		hosts := r.serversCache[s.Service]
+		if len(hosts) == 0{
+			log.Println("api.callJson2RpcHttp no alive service:",s.Service)
+		}
+		index = index +1
+		if index < len(hosts){
+			cli = pro.NewHttpJson2rpcClient(hosts[index])
+		}else{
+			cli = pro.NewHttpJson2rpcClient(hosts[0])
+		}
+		defer cli.Close()
+		e = cli.Call(method,s.Args,s.Response)
+	})
+
+	return e
+}
+
+func  getMethodName(s Facade) string{
 	class := strings.Split(s.Service,".")
-	className := class[len(class)-1]
-	defer cli.Close()
-	return cli.Call(className + "." + s.Method,s.Args,s.Response)
+	return class[len(class)-1] + "." + s.Method
 }
 
 /**
@@ -212,7 +326,8 @@ func(r *goRpc) registerService(service []interface{},protocol string){
 /**
 从已注册服务列表中取出一个
  */
-func (r *goRpc) getHost(s Facade) (string,error)  {
+func (r *goRpc) getHost(s Facade) (string,int,error)  {
+
 	hosts := r.serversCache[s.Service]
 	if hosts == nil || len(hosts)==0{
 		nodes,err := r.register.GetChildren(s.Service)
@@ -221,18 +336,29 @@ func (r *goRpc) getHost(s Facade) (string,error)  {
 		if len(nodes)==0{
 			e := errors.New("call rpc error : no alive provider:" + s.Service)
 			log.Println(e.Error())
-			return "",e
+			return "", 0 ,e
 		}
-		log.Println("call host :",nodes[0].Key)
 		if hosts == nil {//初次调用 ，初始订阅服务变化
 			go subscribe(s,r)
 		}
 		r.cacheServer(nodes,s)//缓存
-		return nodes[0].Key,nil
+		if len(nodes) == 1 {
+			return nodes[0].Key,0,nil
+		}else{
+			index := utils.RoundSelector(len(nodes))
+			return nodes[index].Key,index,nil
+		}
 	}else {
-		host := hosts[rand.Int() % len(hosts)]
+		host := ""
+		index := 0
+		if len(hosts) == 1 {
+			host = hosts[0]
+		}else {
+			index = utils.RoundSelector(len(hosts))
+			host = hosts[index]
+		}
 		log.Println("point cache host:", host,"method:",s.Method)
-		return host,nil
+		return host,index,nil
 	}
 }
 

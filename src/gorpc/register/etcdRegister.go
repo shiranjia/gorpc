@@ -85,7 +85,7 @@ func (r *etcdRegister) Set(path string,value string) error  {
 	log.Println("set path:",address)
 	res ,err := r.client.Set(context.Background(),c.Key2path(path),value,
 		&client.SetOptions{
-			TTL : r.updateInterval + 10 * time.Second,
+			TTL : 6 * time.Second,
 			PrevExist : client.PrevIgnore,
 		})
 	err = c.CheckErr("etcdRegister.Set",err)
@@ -107,7 +107,7 @@ func (r *etcdRegister) TimeTicker()  {
 			for _ , h := range r.hosts{
 				res ,err := r.client.Set(context.Background(),h.Address,strconv.Itoa(h.Invoke),
 					&client.SetOptions{
-						TTL : r.updateInterval + 10 * time.Second,
+						TTL : 6 * time.Second,
 						PrevExist : client.PrevIgnore,
 					})
 				err = c.CheckErr("etcdRegister.TimeTicker",err)

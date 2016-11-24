@@ -17,6 +17,9 @@
  */
 package service
 
+/**
+服务
+ */
 type Service struct {
 	Servic		interface{} 	`注册服务`
 	Protocol	string		`协议类型`

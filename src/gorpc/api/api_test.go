@@ -4,16 +4,17 @@ import (
 	"testing"
 	"gorpc/utils"
 	"gorpc/service"
+	"strconv"
 )
 
 func TestGoRpc_RegisterServer(t *testing.T) {
 	rpc := NewGoRpc("http://192.168.146.147:2379")
 	rpc.RegisterServer(
-		//service.Service{&Test{},utils.PROTOCOL_RPC},
+		service.Service{&Test{},utils.PROTOCOL_RPC},
 		//service.Service{&Test{},utils.PROTOCOL_HTTP},
 		//service.Service{&Test{},utils.PROTOCOL_JSON},
 		//service.Service{&Test{},utils.PROTOCOL_JSON2RPC},
-		service.Service{&Test{},utils.PROTOCOL_JSON2RPCHTTP},
+		//service.Service{&Test{},utils.PROTOCOL_JSON2RPCHTTP},
 	)
 	w := make(chan int)
 	<- w
@@ -21,7 +22,6 @@ func TestGoRpc_RegisterServer(t *testing.T) {
 
 func TestGoRpc_Call(t *testing.T) {
 	goRpc := NewGoRpc("http://192.168.146.147:2379")
-	resp := &Response{}
 	f := Facade{
 		Service:"api.Test",
 		Method:"Tostring",
@@ -32,7 +32,25 @@ func TestGoRpc_Call(t *testing.T) {
 		//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
 	}
 	goRpc.Call(f)
-	t.Log(resp.Body)
+	t.Log(f.Response)
+}
+
+func BenchmarkGoRpc_Call(b *testing.B) {
+	goRpc := NewGoRpc("http://192.168.146.147:2379")
+	for i:=0;i<b.N;i++{
+		f := Facade{
+			Service:"api.Test",
+			Method:"Tostring",
+			Args:Request{"ttt protocol rpc" + strconv.Itoa(i)},
+			Response:&Response{},
+			Protocol:utils.PROTOCOL_RPC,
+			//Protocol:utils.PROTOCOL_JSON,
+			//Protocol:utils.PROTOCOL_JSON2RPC,
+			//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
+		}
+		goRpc.Call(f)
+		b.Log(f.Response)
+	}
 }
 
 func TestGoRpc_RegisterHTTPServer(t *testing.T) {

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 const(
@@ -126,5 +127,12 @@ func Host(protocol string) string {
 	case PROTOCOL_JSON2RPCHTTP	:	return Ip() + ":1238"
 	default				:	return Ip() + ":1234"
 	}
+}
+
+func RoundSelector(count int) int  {
+	a := time.Now().Second()
+	//log.Println(a)
+	a = a & (count - 1)
+	return a
 }
 
