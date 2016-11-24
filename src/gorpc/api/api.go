@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package api
 
 import (
@@ -35,11 +52,11 @@ func NewGoRpc(host string) *goRpc{
 注册服务
  */
 func  (r *goRpc) RegisterServer(service ...service.Service) {
-	rpcService := []interface{}{}
-	httpService := []interface{}{}
-	jsonService := []interface{}{}
-	json2rpcService := []interface{}{}
-	json2rpcHttpService := []interface{}{}
+	rpcService		:= []interface{}{}
+	httpService		:= []interface{}{}
+	jsonService		:= []interface{}{}
+	json2rpcService 	:= []interface{}{}
+	json2rpcHttpService 	:= []interface{}{}
 	for _,s := range service{
 		switch s.Protocol {
 		case utils.PROTOCOL_RPC		:	rpcService = append(rpcService,s.Servic)
@@ -47,10 +64,10 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
 		case utils.PROTOCOL_JSON	:	jsonService = append(jsonService,s.Servic)
 		case utils.PROTOCOL_JSON2RPC	:	json2rpcService = append(json2rpcService,s.Servic)
 		case utils.PROTOCOL_JSON2RPCHTTP:	json2rpcHttpService = append(json2rpcHttpService,s.Servic)
-		default:rpcService = append(rpcService,s.Servic)
+		default				:	rpcService = append(rpcService,s.Servic)
 		}
 	}
-	if len(rpcService) != 0 {r.registerRPCServer(rpcService,utils.PROTOCOL_RPC	)}
+	if len(rpcService) != 0	{r.registerRPCServer(rpcService,utils.PROTOCOL_RPC	)}
 	if len(httpService) != 0 {r.registerHTTPServer(httpService,utils.PROTOCOL_HTTP)}
 	if len(jsonService) != 0 {r.registerJsonServer(jsonService,utils.PROTOCOL_JSON)}
 	if len(json2rpcService) != 0 {r.registerJson2RpcServer(json2rpcService,utils.PROTOCOL_JSON2RPC)}
