@@ -27,8 +27,9 @@ func TestGoRpc_Call(t *testing.T) {
 		Method:"Tostring",
 		Args:Request{"ttt protocol rpc"},
 		Response:&Response{},
+		Protocol:utils.PROTOCOL_RPC,
 		//Protocol:utils.PROTOCOL_JSON,
-		Protocol:utils.PROTOCOL_JSON2RPC,
+		//Protocol:utils.PROTOCOL_JSON2RPC,
 		//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
 	}
 	goRpc.Call(f)

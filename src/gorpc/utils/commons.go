@@ -118,6 +118,10 @@ func Key2path(key string) string{
 	return RootPath + Separator + key
 }
 
+func ProviderPath(serviceName string) string  {
+	return serviceName + Separator + "provider" + Separator
+}
+
 func Host(protocol string) string {
 	switch protocol {
 	case PROTOCOL_RPC		:	return Ip() + ":1234"

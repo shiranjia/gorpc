@@ -28,6 +28,7 @@ import (
 	"github.com/coreos/etcd/client"
 	"gorpc/service"
 	"net/rpc"
+	"github.com/powerman/rpc-codec/jsonrpc2"
 )
 
 type goRpc struct {
@@ -238,7 +239,7 @@ func (r *goRpc) callJson2Rpc(s Facade) error    {
 		return err
 	}
 	method := getMethodName(s)
-	var cli *rpc.Client
+	var cli *jsonrpc2.Client
 	var e error
 	utils.Try(func(){
 		cli := pro.NewJSON2Client(host)
@@ -281,7 +282,7 @@ func (r *goRpc) callJson2RpcHttp(s Facade) error    {
 		return err
 	}
 	method := getMethodName(s)
-	var cli *rpc.Client
+	var cli *jsonrpc2.Client
 	var e error
 	utils.Try(func(){
 		cli := pro.NewHttpJson2rpcClient(host)
@@ -319,7 +320,7 @@ func(r *goRpc) registerService(service []interface{},protocol string){
 		t :=reflect.TypeOf(ser)
 		serviceName := t.String()
 		log.Println(serviceName)
-		r.register.Set(serviceName + utils.Separator + utils.Host(protocol) , "")
+		r.register.Set(utils.ProviderPath(serviceName) + utils.Host(protocol) , "")
 	}
 }
 
@@ -330,7 +331,7 @@ func (r *goRpc) getHost(s Facade) (string,int,error)  {
 
 	hosts := r.serversCache[s.Service]
 	if hosts == nil || len(hosts)==0{
-		nodes,err := r.register.GetChildren(s.Service)
+		nodes,err := r.register.GetChildren(s.Service + utils.Separator + "provider")
 		utils.CheckErr("api.CallHTTP",err)
 		log.Println(nodes)
 		if len(nodes)==0{
@@ -380,7 +381,7 @@ func  (r *goRpc)  cacheServer(nodes []register.Node,s Facade){
 订阅服务注册中心
  */
 func subscribe(s Facade,r *goRpc){
-	r.register.Subscribe(utils.Key2path(s.Service) , make(chan int), func(cl *client.Response) {
+	r.register.Subscribe(utils.Key2path(s.Service)  + utils.Separator + "provider" , make(chan int), func(cl *client.Response) {
 		path := strings.Split(cl.Node.Key,utils.Separator)
 		hostAndPort := path[len(path)-1]
 		log.Println("收到事件：",cl.Action,cl.Node)
