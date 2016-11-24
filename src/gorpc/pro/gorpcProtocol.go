@@ -44,7 +44,7 @@ func NewHTTPServer(service []interface{}){
 		rpc.Register(s)
 	}
 	rpc.HandleHTTP()
-	err := http.ListenAndServe(":1234",nil)
+	err := http.ListenAndServe(":1235",nil)
 	utils.CheckErr("gorpcProtocol.NewHTTPServer",err)
 }
 
@@ -55,7 +55,7 @@ func NewHTTPClient(host string) *rpc.Client{
 }
 
 func NewJSONServer(service []interface{})  {
-	lis, err := net.Listen("tcp", ":1234")
+	lis, err := net.Listen("tcp", ":1236")
 	utils.CheckErr("gorpcProtocol.NewJSONServer",err)
 	srv := rpc.NewServer()
 	for _,s := range service {
@@ -86,7 +86,7 @@ func NewJSON2Server(service []interface{}){
 		err := rpc.Register(s)
 		utils.CheckErr("gorpcProtocol.NewJSON2Server.Register",err)
 	}
-	listener, err := net.Listen("tcp", ":1234")
+	listener, err := net.Listen("tcp", ":1237")
 	utils.CheckErr("gorpcProtocol.NewJSON2Server",err)
 	go func(lis net.Listener){
 		for  {
@@ -112,7 +112,7 @@ func NewHttpJson2rpcServer(service [] interface{}) {
 	}
 	// Server provide a HTTP transport on /rpc endpoint.
 	http.Handle("/rpc", jsonrpc2.HTTPHandler(server))
-	lnHTTP, err := net.Listen("tcp", ":1235")
+	lnHTTP, err := net.Listen("tcp", ":1238")
 	utils.CheckErr("gorpcProtocol.NewHttpJson2rpcServer",err)
 	go http.Serve(lnHTTP, nil)
 }

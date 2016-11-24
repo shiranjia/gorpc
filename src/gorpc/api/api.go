@@ -10,6 +10,7 @@ import (
 	"strings"
 	"errors"
 	"github.com/coreos/etcd/client"
+	"gorpc/service"
 )
 
 type goRpc struct {
@@ -31,19 +32,60 @@ func NewGoRpc(host string) *goRpc{
 }
 
 /**
-注册rpc协议服务
+注册服务
  */
-func (r *goRpc) RegisterRPCServer(service ...interface{})  {
-	r.registerService(service)
-	pro.NewRPCServer(service)
+func  (r *goRpc) RegisterServer(service ...service.Service) {
+	rpcService := []interface{}{}
+	httpService := []interface{}{}
+	jsonService := []interface{}{}
+	json2rpcService := []interface{}{}
+	json2rpcHttpService := []interface{}{}
+	for _,s := range service{
+		switch s.Protocol {
+		case utils.PROCOTOL_RPC		:	rpcService = append(rpcService,s.Servic)
+		case utils.PROTOCOL_HTTP	:	httpService = append(httpService,s.Servic)
+		case utils.PROTOCOL_JSON	:	jsonService = append(jsonService,s.Servic)
+		case utils.PROTOCOL_JSON2RPC	:	json2rpcService = append(json2rpcService,s.Servic)
+		case utils.PROTOCOL_JSON2RPCHTTP:	json2rpcHttpService = append(json2rpcHttpService,s.Servic)
+		default:rpcService = append(rpcService,s.Servic)
+		}
+	}
+	if len(rpcService) != 0 {r.registerRPCServer(rpcService,utils.PROCOTOL_RPC	)}
+	if len(httpService) != 0 {r.registerHTTPServer(httpService,utils.PROTOCOL_HTTP)}
+	if len(jsonService) != 0 {r.registerJsonServer(jsonService,utils.PROTOCOL_JSON)}
+	if len(json2rpcService) != 0 {r.registerJson2RpcServer(json2rpcService,utils.PROTOCOL_JSON2RPC)}
+	if len(json2rpcHttpService) !=0 {r.registerJson2RpcHttpServer(json2rpcHttpService,utils.PROTOCOL_JSON2RPCHTTP)}
 	log.Println("register over")
 	r.TimeTicker()//打开心跳
 }
 
 /**
+调用服务
+ */
+func (r *goRpc) Call(s Facade) error {
+	switch s.Protocol {
+	case utils.PROCOTOL_RPC		:	return r.callRPC(s)
+	case utils.PROTOCOL_HTTP	:	return r.callHTTP(s)
+	case utils.PROTOCOL_JSON	:	return r.callJson(s)
+	case utils.PROTOCOL_JSON2RPC	:	return r.callJson2Rpc(s)
+	case utils.PROTOCOL_JSON2RPCHTTP:	return r.callJson2RpcHttp(s)
+	default				:	return r.callRPC(s)
+	}
+}
+
+/**
+注册rpc协议服务
+ */
+func (r *goRpc) registerRPCServer(service []interface{},protocol string)  {
+	r.registerService(service,protocol)
+	pro.NewRPCServer(service)
+
+}
+
+/**
 远程调用  go rpc协议
  */
-func (r *goRpc) CallRPC(s Facade) error  {
+func (r *goRpc) callRPC(s Facade) error  {
 	s.Service = "*" + s.Service
 	host,_ := r.getHost(s)
 	client := pro.NewRPCClient(host)
@@ -57,17 +99,15 @@ func (r *goRpc) CallRPC(s Facade) error  {
 /**
 注册http协议服务
  */
-func (r *goRpc) RegisterHTTPServer(service ...interface{})  {
-	r.registerService(service)
+func (r *goRpc) registerHTTPServer(service []interface{},protocol string)  {
+	r.registerService(service,protocol)
 	go pro.NewHTTPServer(service)//注册服务
-	log.Println("register over")
-	r.TimeTicker()//打开心跳
 }
 
 /**
 远程调用 http协议
  */
-func (r *goRpc) CallHTTP(s Facade) error  {
+func (r *goRpc) callHTTP(s Facade) error  {
 	s.Service = "*"+s.Service
 	host,_ := r.getHost(s)
 	cli := pro.NewHTTPClient(host)
@@ -80,27 +120,75 @@ func (r *goRpc) CallHTTP(s Facade) error  {
 /**
 注册服务 json协议
  */
-func (r *goRpc) RegisterJsonServer(service ...interface{}){
-
+func (r *goRpc) registerJsonServer(service []interface{},protocol string){
+	r.registerService(service,protocol)
+	pro.NewJSONServer(service)
 }
 
 /**
 远程调用 json协议
  */
-func (r *goRpc) CallJSON(s Facade) error    {
+func (r *goRpc) callJson(s Facade) error    {
+	s.Service = "*"+s.Service
+	host,_ := r.getHost(s)
+	cli := pro.NewJSONClient(host)
+	class := strings.Split(s.Service,".")
+	className := class[len(class)-1]
+	defer cli.Close()
+	return cli.Call(className + "." + s.Method,s.Args,s.Response)
+}
 
-	return nil
+/**
+注册服务 json2rpc 协议
+ */
+func (r *goRpc) registerJson2RpcServer(service []interface{},protocol string){
+	r.registerService(service,protocol)
+	pro.NewJSON2Server(service)
+}
+
+/**
+远程调用 json2rpc 协议
+ */
+func (r *goRpc) callJson2Rpc(s Facade) error    {
+	s.Service = "*"+s.Service
+	host,_ := r.getHost(s)
+	cli := pro.NewJSON2Client(host)
+	class := strings.Split(s.Service,".")
+	className := class[len(class)-1]
+	defer cli.Close()
+	return cli.Call(className + "." + s.Method,s.Args,s.Response)
+}
+
+/**
+注册服务 json2rpc http 协议
+ */
+func (r *goRpc) registerJson2RpcHttpServer(service []interface{},protocol string){
+	r.registerService(service,protocol)
+	pro.NewHttpJson2rpcServer(service)
+}
+
+/**
+远程调用 json2rpc http 协议
+ */
+func (r *goRpc) callJson2RpcHttp(s Facade) error    {
+	s.Service = "*"+s.Service
+	host,_ := r.getHost(s)
+	cli := pro.NewHttpJson2rpcClient(host)
+	class := strings.Split(s.Service,".")
+	className := class[len(class)-1]
+	defer cli.Close()
+	return cli.Call(className + "." + s.Method,s.Args,s.Response)
 }
 
 /**
 向注册中心注册服务
  */
-func(r *goRpc) registerService(service []interface{}){
+func(r *goRpc) registerService(service []interface{},protocol string){
 	for _,ser := range service{
 		t :=reflect.TypeOf(ser)
 		serviceName := t.String()
 		log.Println(serviceName)
-		r.Register.Set(serviceName + utils.Separator + utils.Ip() +":1234" , "")
+		r.Register.Set(serviceName + utils.Separator + utils.Host(protocol) , "")
 	}
 }
 

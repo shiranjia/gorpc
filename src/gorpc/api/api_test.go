@@ -3,12 +3,13 @@ package api
 import (
 	"testing"
 	"gorpc/utils"
+	"gorpc/service"
 )
 
 func TestGoRpc_RegisterServer(t *testing.T) {
 	rpc := NewGoRpc("http://192.168.146.147:2379")
 	tes := &Test{}
-	rpc.RegisterRPCServer(tes)
+	rpc.RegisterServer(service.Service{tes,utils.PROCOTOL_RPC})
 	w := make(chan int)
 	<- w
 }
@@ -21,8 +22,9 @@ func TestGoRpc_Call(t *testing.T) {
 		Method:"Tostring",
 		Args:Request{"asdasdttt"},
 		Response:resp,
+		Protocol:utils.PROCOTOL_RPC,
 	}
-	goRpc.CallRPC(f)
+	goRpc.Call(f)
 	t.Log(resp.Body)
 }
 
@@ -30,7 +32,7 @@ func TestGoRpc_RegisterHTTPServer(t *testing.T) {
 	rpc := NewGoRpc("http://192.168.146.147:2379")
 	tes := &Test{}
 	tes1 := &Test1{}
-	rpc.RegisterHTTPServer(tes,tes1)
+	rpc.RegisterServer(service.Service{tes,utils.PROTOCOL_HTTP},service.Service{tes1,utils.PROTOCOL_HTTP})
 	w := make(chan int)
 	<- w
 }
@@ -43,16 +45,17 @@ func TestGoRpc_CallHTTP(t *testing.T) {
 			Method:"Tostring",
 			Args:Request{"asdasdttt"},
 			Response:&Response{},
+			Protocol:utils.PROTOCOL_HTTP,
 		}
-		goRpc.CallHTTP(f)
+		goRpc.Call(f)
 		t.Log(f.Response)
 		f.Args = Request{"asfafe!!!"}
-		err := goRpc.CallHTTP(f)
+		err := goRpc.Call(f)
 		utils.CheckErr("TestGoRpc_CallHTTP",err)
 		t.Log(f.Response)
 
 		f.Args = Request{"yyyyyyttttttttttt!!!"}
-		goRpc.CallHTTP(f)
+		goRpc.Call(f)
 		utils.CheckErr("TestGoRpc_CallHTTP",err)
 		t.Log(f.Response)
 	}()

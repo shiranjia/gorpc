@@ -35,7 +35,7 @@ func TestNewHTTPServer(t *testing.T) {
 
 func TestNewHTTPClient(t *testing.T) {
 	t.Log("test tNewHTTPClient")
-	host := "127.0.0.1:1234"
+	host := "127.0.0.1:1235"
 	client := NewHTTPClient(host)
 	defer client.Close()
 	reply := &Response{}
@@ -55,7 +55,7 @@ func TestNewJSONServer(t *testing.T) {
 
 func TestNewJSONClient(t *testing.T) {
 	t.Log("test tNewJSONClient")
-	host := "127.0.0.1:1234"
+	host := "127.0.0.1:1236"
 	client := NewJSONClient(host)
 	defer client.Close()
 	reply := &Response{}
@@ -76,7 +76,7 @@ func TestNewJSON2Server(t *testing.T) {
 func TestNewJSON2Client(t *testing.T) {
 	t.Log("test tNewJSON2Client")
 	// Server provide a TCP transport.
-	host := "127.0.0.1:1234"
+	host := "127.0.0.1:1237"
 	client := NewJSON2Client(host)
 	defer client.Close()
 	reply := &Response{}
@@ -97,7 +97,7 @@ func TestNewHttpJson2rpcServer(t *testing.T) {
 func TestNewHttpJson2rpcClient(t *testing.T) {
 	t.Log("test httpJson2rpcClient")
 	// Server provide a TCP transport.
-	host := "127.0.0.1:1235"
+	host := "127.0.0.1:1238"
 	client := NewHttpJson2rpcClient(host)
 	defer client.Close()
 	reply := &Response{}

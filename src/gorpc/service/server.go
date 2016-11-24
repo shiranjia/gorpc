@@ -1,5 +1,10 @@
 package service
 
+type Service struct {
+	Servic		interface{} 	`注册服务`
+	Protocol	string		`协议类型`
+}
+
 /**
 服务节点机器信息
  */

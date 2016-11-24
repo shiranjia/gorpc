@@ -9,16 +9,23 @@ import (
 )
 
 const(
-	RootPath	= "/gorpc"	//根目录
-	Separator	= "/"		//目录分隔符
-	//// include get, set, delete, update, create, compareAndSwap, etcd可订阅事件
-	G		= "get"
-	S		= "set"
-	D		= "delete"
-	U		= "update"
-	C		= "create"
-	E		= "expire"
-	CompareAndSwap	="compareAndSwap"
+	RootPath		= "/gorpc"	//根目录
+	Separator		= "/"		//目录分隔符
+
+	// include get, set, delete, update, create, compareAndSwap, expire  etcd可订阅事件
+	G			= "get"
+	S			= "set"
+	D			= "delete"
+	U			= "update"
+	C			= "create"
+	E			= "expire"
+	CompareAndSwap		= "compareAndSwap"
+
+	PROCOTOL_RPC		= "rpc"			//协议类型 默认rpc default
+	PROTOCOL_HTTP		= "http"		//协议类型 tcp传输gob
+	PROTOCOL_JSON		= "json"		//协议类型 tcp传输json
+	PROTOCOL_JSON2RPC	= "json2rpc"		//协议类型 tcp传输json2rpc
+	PROTOCOL_JSON2RPCHTTP	= "json2rpchttp"	//协议类型 http传输json2rpc
 )
 
 /**
@@ -91,5 +98,16 @@ func Path2key(path string) string{
 
 func Key2path(key string) string{
 	return RootPath + Separator + key
+}
+
+func Host(protocol string) string {
+	switch protocol {
+	case PROCOTOL_RPC		:	return Ip() + ":1234"
+	case PROTOCOL_HTTP		:	return Ip() + ":1235"
+	case PROTOCOL_JSON		:	return Ip() + ":1236"
+	case PROTOCOL_JSON2RPC		:	return Ip() + ":1237"
+	case PROTOCOL_JSON2RPCHTTP	:	return Ip() + ":1238"
+	default				:	return Ip() + ":1234"
+	}
 }
 
