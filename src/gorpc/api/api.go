@@ -15,7 +15,7 @@ import (
 
 type goRpc struct {
 	serversCache map[string][]string `服务列表`
-	register.Register		`注册中心`
+	register register.Register		`注册中心`
 	lock chan int			`更新服务缓存锁`
 }
 
@@ -26,7 +26,7 @@ func NewGoRpc(host string) *goRpc{
 	g := &goRpc{
 		serversCache : make(map[string][]string),
 		lock : make(chan int,1),
-		Register : register.CreateEtcdRegister(host),
+		register : register.CreateEtcdRegister(host),
 	}
 	return  g
 }
@@ -42,7 +42,7 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
 	json2rpcHttpService := []interface{}{}
 	for _,s := range service{
 		switch s.Protocol {
-		case utils.PROCOTOL_RPC		:	rpcService = append(rpcService,s.Servic)
+		case utils.PROTOCOL_RPC		:	rpcService = append(rpcService,s.Servic)
 		case utils.PROTOCOL_HTTP	:	httpService = append(httpService,s.Servic)
 		case utils.PROTOCOL_JSON	:	jsonService = append(jsonService,s.Servic)
 		case utils.PROTOCOL_JSON2RPC	:	json2rpcService = append(json2rpcService,s.Servic)
@@ -50,13 +50,13 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
 		default:rpcService = append(rpcService,s.Servic)
 		}
 	}
-	if len(rpcService) != 0 {r.registerRPCServer(rpcService,utils.PROCOTOL_RPC	)}
+	if len(rpcService) != 0 {r.registerRPCServer(rpcService,utils.PROTOCOL_RPC	)}
 	if len(httpService) != 0 {r.registerHTTPServer(httpService,utils.PROTOCOL_HTTP)}
 	if len(jsonService) != 0 {r.registerJsonServer(jsonService,utils.PROTOCOL_JSON)}
 	if len(json2rpcService) != 0 {r.registerJson2RpcServer(json2rpcService,utils.PROTOCOL_JSON2RPC)}
 	if len(json2rpcHttpService) !=0 {r.registerJson2RpcHttpServer(json2rpcHttpService,utils.PROTOCOL_JSON2RPCHTTP)}
 	log.Println("register over")
-	r.TimeTicker()//打开心跳
+	r.register.TimeTicker()//打开心跳
 }
 
 /**
@@ -64,7 +64,7 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
  */
 func (r *goRpc) Call(s Facade) error {
 	switch s.Protocol {
-	case utils.PROCOTOL_RPC		:	return r.callRPC(s)
+	case utils.PROTOCOL_RPC		:	return r.callRPC(s)
 	case utils.PROTOCOL_HTTP	:	return r.callHTTP(s)
 	case utils.PROTOCOL_JSON	:	return r.callJson(s)
 	case utils.PROTOCOL_JSON2RPC	:	return r.callJson2Rpc(s)
@@ -188,7 +188,7 @@ func(r *goRpc) registerService(service []interface{},protocol string){
 		t :=reflect.TypeOf(ser)
 		serviceName := t.String()
 		log.Println(serviceName)
-		r.Register.Set(serviceName + utils.Separator + utils.Host(protocol) , "")
+		r.register.Set(serviceName + utils.Separator + utils.Host(protocol) , "")
 	}
 }
 
@@ -198,7 +198,7 @@ func(r *goRpc) registerService(service []interface{},protocol string){
 func (r *goRpc) getHost(s Facade) (string,error)  {
 	hosts := r.serversCache[s.Service]
 	if hosts == nil || len(hosts)==0{
-		nodes,err := r.Register.GetChildren(s.Service)
+		nodes,err := r.register.GetChildren(s.Service)
 		utils.CheckErr("api.CallHTTP",err)
 		log.Println(nodes)
 		if len(nodes)==0{
@@ -237,7 +237,7 @@ func  (r *goRpc)  cacheServer(nodes []register.Node,s Facade){
 订阅服务注册中心
  */
 func subscribe(s Facade,r *goRpc){
-	r.Subscribe(utils.Key2path(s.Service) , make(chan int), func(cl *client.Response) {
+	r.register.Subscribe(utils.Key2path(s.Service) , make(chan int), func(cl *client.Response) {
 		path := strings.Split(cl.Node.Key,utils.Separator)
 		hostAndPort := path[len(path)-1]
 		log.Println("收到事件：",cl.Action,cl.Node)

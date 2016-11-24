@@ -12,7 +12,7 @@ import (
 )
 
 /**
-gob
+tcp transfer gob protocol
  */
 func NewRPCServer(service []interface{}){
 	for _ ,s := range service {
@@ -21,23 +21,27 @@ func NewRPCServer(service []interface{}){
 	}
 	listener,err := net.Listen("tcp",":1234")
 	utils.CheckErr("gorpcProtocol.NewServer",err)
-	go listen(listener)
+	go func(l net.Listener){
+		for {
+			conn,err := l.Accept()
+			utils.CheckErr("gorpcProtocol.listen",err)
+			rpc.ServeConn(conn)
+		}
+	}(listener)
 }
 
-func listen(l net.Listener){
-	for {
-		conn,err := l.Accept()
-		utils.CheckErr("gorpcProtocol.listen",err)
-		rpc.ServeConn(conn)
-	}
-}
-
+/**
+tcp transfer gob protocol client
+ */
 func NewRPCClient(host string) *rpc.Client{
 	client,err := rpc.Dial("tcp" , host)
 	utils.CheckErr("gorpcProtocol.NewClient",err)
 	return client
 }
 
+/**
+http transfer gob protocol
+ */
 func NewHTTPServer(service []interface{}){
 	for _ ,s := range service {
 		log.Println("register http service:",reflect.TypeOf(s).String())
@@ -48,12 +52,18 @@ func NewHTTPServer(service []interface{}){
 	utils.CheckErr("gorpcProtocol.NewHTTPServer",err)
 }
 
+/**
+http transfer gob protocol client
+ */
 func NewHTTPClient(host string) *rpc.Client{
 	client,err := rpc.DialHTTP("tcp" , host)
 	utils.CheckErr("gorpcProtocol.NewHTTPClient",err)
 	return client
 }
 
+/**
+tcp transfer json protocol
+ */
 func NewJSONServer(service []interface{})  {
 	lis, err := net.Listen("tcp", ":1236")
 	utils.CheckErr("gorpcProtocol.NewJSONServer",err)
@@ -74,12 +84,18 @@ func NewJSONServer(service []interface{})  {
 	}(lis,srv)
 }
 
+/**
+tcp transfer json protocol client
+ */
 func NewJSONClient(host string) *rpc.Client{
 	client, err := jsonrpc.Dial("tcp", host)
 	utils.CheckErr("gorpcProtocol.NewJSONClient",err)
 	return client
 }
 
+/**
+tcp transfer json2 protocol
+ */
 func NewJSON2Server(service []interface{}){
 	for _,s := range service{
 		log.Println("register json2rpc service:",reflect.TypeOf(s).String())
@@ -97,12 +113,18 @@ func NewJSON2Server(service []interface{}){
 	}(listener)
 }
 
+/**
+tcp transfer json2 protocol client
+ */
 func NewJSON2Client(host string) *jsonrpc2.Client  {
 	client,err := jsonrpc2.Dial("tcp",host)
 	utils.CheckErr("gorpcProtocol.NewJSON2Client",err)
 	return client
 }
 
+/**
+http transfer json protocol
+ */
 func NewHttpJson2rpcServer(service [] interface{}) {
 	server := rpc.NewServer()
 	for _,s := range service{
@@ -117,6 +139,9 @@ func NewHttpJson2rpcServer(service [] interface{}) {
 	go http.Serve(lnHTTP, nil)
 }
 
+/**
+http transfer json2 protocol
+ */
 func NewHttpJson2rpcClient(host string) *jsonrpc2.Client {
 	// Client use HTTP transport.
 	clientHTTP := jsonrpc2.NewHTTPClient("http://" + host + "/rpc")

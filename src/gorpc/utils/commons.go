@@ -21,8 +21,8 @@ const(
 	E			= "expire"
 	CompareAndSwap		= "compareAndSwap"
 
-	PROCOTOL_RPC		= "rpc"			//协议类型 默认rpc default
-	PROTOCOL_HTTP		= "http"		//协议类型 tcp传输gob
+	PROTOCOL_RPC		= "rpc"			//协议类型 tcp传输gob 默认rpc default
+	PROTOCOL_HTTP		= "http"		//协议类型 http传输gob
 	PROTOCOL_JSON		= "json"		//协议类型 tcp传输json
 	PROTOCOL_JSON2RPC	= "json2rpc"		//协议类型 tcp传输json2rpc
 	PROTOCOL_JSON2RPCHTTP	= "json2rpchttp"	//协议类型 http传输json2rpc
@@ -102,7 +102,7 @@ func Key2path(key string) string{
 
 func Host(protocol string) string {
 	switch protocol {
-	case PROCOTOL_RPC		:	return Ip() + ":1234"
+	case PROTOCOL_RPC		:	return Ip() + ":1234"
 	case PROTOCOL_HTTP		:	return Ip() + ":1235"
 	case PROTOCOL_JSON		:	return Ip() + ":1236"
 	case PROTOCOL_JSON2RPC		:	return Ip() + ":1237"

@@ -8,8 +8,13 @@ import (
 
 func TestGoRpc_RegisterServer(t *testing.T) {
 	rpc := NewGoRpc("http://192.168.146.147:2379")
-	tes := &Test{}
-	rpc.RegisterServer(service.Service{tes,utils.PROCOTOL_RPC})
+	rpc.RegisterServer(
+		//service.Service{&Test{},utils.PROTOCOL_RPC},
+		//service.Service{&Test{},utils.PROTOCOL_HTTP},
+		//service.Service{&Test{},utils.PROTOCOL_JSON},
+		//service.Service{&Test{},utils.PROTOCOL_JSON2RPC},
+		service.Service{&Test{},utils.PROTOCOL_JSON2RPCHTTP},
+	)
 	w := make(chan int)
 	<- w
 }
@@ -20,9 +25,11 @@ func TestGoRpc_Call(t *testing.T) {
 	f := Facade{
 		Service:"api.Test",
 		Method:"Tostring",
-		Args:Request{"asdasdttt"},
-		Response:resp,
-		Protocol:utils.PROCOTOL_RPC,
+		Args:Request{"ttt protocol rpc"},
+		Response:&Response{},
+		//Protocol:utils.PROTOCOL_JSON,
+		Protocol:utils.PROTOCOL_JSON2RPC,
+		//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
 	}
 	goRpc.Call(f)
 	t.Log(resp.Body)
@@ -62,5 +69,6 @@ func TestGoRpc_CallHTTP(t *testing.T) {
 	//执行测试用例时不能阻塞测试用例进程，否则rpc句柄会一直阻塞
 	//time.Sleep(100 * time.Second)
 }
+
 
 
