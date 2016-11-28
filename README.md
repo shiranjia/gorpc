@@ -8,8 +8,8 @@
 
 ###例子
 #####定义服务：</br>
-#####type Test struct {} //</br>
-#####func (t *Test) Tostring(req Request,resp *Response)  error {   //定义接口方法</br>
+#####type Test struct {} </br>
+#####func (t *Test) Tostring(req Request,resp *Response)  error {</br>
 #####	log.Println(req.Body)</br>
 #####	resp.Body = fmt.Sprint(req.Body) +",test"</br>
 #####	return nil</br>
