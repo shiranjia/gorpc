@@ -7,6 +7,13 @@
 ##### * 通信支持tcp，http</br>
 
 ###例子
+#####定义服务：</br>
+#####type Test struct {} //</br>
+#####func (t *Test) Tostring(req Request,resp *Response)  error {   //定义接口方法</br>
+#####	log.Println(req.Body)</br>
+#####	resp.Body = fmt.Sprint(req.Body) +",test"</br>
+#####	return nil</br>
+#####}</br>
 #####注册服务：</br>
 #####etcdUrl := "http://192.168.146.147:2379"</br>
 #####rpc := NewGoRpc(etcdUrl)</br>
