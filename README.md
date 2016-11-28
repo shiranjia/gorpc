@@ -1,5 +1,4 @@
 ##  gorpc
-=============
 ###go语言分布式服务总线
 ----------------------------------------------------------------------------------------------------------------------------------------
 ##### * 注册中心使用etcd</br>
@@ -9,13 +8,12 @@
 
 ###例子
 #####注册服务：</br>
-<code>
-etcdUrl := "http://192.168.146.147:2379"</br>
-rpc := NewGoRpc(etcdUrl)</br>
-rpc.RegisterServer(</br>
-service.Service{&Test{},utils.PROTOCOL_RPC},</br>
-)</br>
-</code>
+#####etcdUrl := "http://192.168.146.147:2379"</br>
+#####rpc := NewGoRpc(etcdUrl)</br>
+#####rpc.RegisterServer(</br>
+#####service.Service{&Test{},utils.PROTOCOL_RPC},</br>
+#####)</br>
+
 #####消费服务：</br>
 #####   etcdUrl := "http://192.168.146.147:2379"</br>
 #####	goRpc := NewGoRpc(etcdUrl)</br>
