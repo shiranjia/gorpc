@@ -7,24 +7,24 @@
 通信支持tcp，http
 
 ###例子
-注册服务：
-    	etcdUrl := "http://192.168.146.147:2379"
-	rpc := NewGoRpc(etcdUrl)
-	rpc.RegisterServer(
-		service.Service{&Test{},utils.PROTOCOL_RPC},
-	)
-消费服务：
-   	etcdUrl := "http://192.168.146.147:2379"
-	goRpc := NewGoRpc(etcdUrl)
-	f := Facade{
-		Service:"api.Test",
-		Method:"Tostring",
-		Args:Request{"ttt protocol rpc"},
-		Response:&Response{},
-		Protocol:utils.PROTOCOL_RPC,
-	}
-	goRpc.Call(f)
-	t.Log(f.Response)
+#####注册服务：</br>
+#####   etcdUrl := "http://192.168.146.147:2379"</br>
+#####	rpc := NewGoRpc(etcdUrl)</br>
+#####	rpc.RegisterServer(</br>
+#####	service.Service{&Test{},utils.PROTOCOL_RPC},</br>
+#####	)</br>
+#####消费服务：</br>
+#####   etcdUrl := "http://192.168.146.147:2379"</br>
+#####	goRpc := NewGoRpc(etcdUrl)</br>
+#####	f := Facade{</br>
+#####		Service:"api.Test",</br>
+#####		Method:"Tostring",</br>
+#####		Args:Request{"ttt protocol rpc"},</br>
+#####		Response:&Response{},</br>
+#####		Protocol:utils.PROTOCOL_RPC,</br>
+#####	}</br>
+#####	goRpc.Call(f)</br>
+#####	t.Log(f.Response)</br>
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 部署etcd:
