@@ -9,7 +9,7 @@ import (
 )
 
 func TestGoRpc_RegisterServer(t *testing.T) {
-	etcdUrl := "http://192.168.146.147:2379"
+	etcdUrl := "http://127.0.0.1:2379"
 	rpc := NewGoRpc(etcdUrl)
 	rpc.RegisterServer(
 		service.Service{&Test{},utils.PROTOCOL_RPC},
@@ -25,7 +25,7 @@ func TestGoRpc_RegisterServer(t *testing.T) {
 
 func TestGoRpc_Call(t *testing.T) {
 	t.Log("init:",time.Now().Nanosecond())
-	etcdUrl := "http://192.168.146.147:2379"
+	etcdUrl := "http://127.0.0.1:2379"
 	goRpc := NewGoRpc(etcdUrl)
 	t.Log("start:",time.Now().Nanosecond())
 	for i:=0;i<10;i++ {

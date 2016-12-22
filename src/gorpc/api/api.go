@@ -88,7 +88,7 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
 调用服务
  */
 func (r *goRpc) Call(s Facade) error {
-	r.register.Set(s.Service + utils.Separator + "consumer",utils.Ip())
+	r.register.SetWithTime(s.Service + utils.Separator + "consumer",utils.Ip(),60)
 	switch s.Protocol {
 	case utils.PROTOCOL_RPC		:	return r.callRPC(s)
 	case utils.PROTOCOL_HTTP	:	return r.callHTTP(s)
