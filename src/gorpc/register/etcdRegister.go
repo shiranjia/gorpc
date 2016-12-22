@@ -97,6 +97,23 @@ func (r *etcdRegister) Set(path string,value string) error  {
 	return err
 }
 
+func (r *etcdRegister) SetWithTime(path string,value string,times time.Duration) error  {
+	address := c.Key2path(path)
+	log.Println("set path:",address)
+	res ,err := r.client.Set(context.Background(),c.Key2path(path),value,
+		&client.SetOptions{
+			TTL : times * time.Second,
+			PrevExist : client.PrevIgnore,
+		})
+	err = c.CheckErr("etcdRegister.Set",err)
+	_ = res
+	r.hosts = append(r.hosts,&service.Provider{
+		Address:address,
+		Invoke:0,
+	})
+	return err
+}
+
 /**
 保持心跳，维持临时节点
  */

@@ -19,6 +19,7 @@ package register
 
 import (
 	"github.com/coreos/etcd/client"
+	"time"
 )
 
 type Register interface {
@@ -32,6 +33,11 @@ type Register interface {
 	设置元素
 	 */
 	Set(path string,value string) error
+
+	/**
+	设置元素 包含有效时间
+	 */
+	SetWithTime(path string,value string,times time.Duration) error
 
 	/**
 	获得元素
