@@ -5,9 +5,10 @@ import (
 )
 
 func TestMonitor_GetDate(t *testing.T) {
-	etcdUrl := "http://192.168.146.147:2379"
+	etcdUrl := "http://127.0.0.1:2379"
 	rpc := NewGoRpc(etcdUrl)
 	monitor := rpc.Monitor
 	monitor.GetDate()
 	t.Log(rpc.Monitor.Service)
 }
+
