@@ -5,10 +5,12 @@ import (
 	"gorpc/utils"
 	"gorpc/service"
 	"strconv"
+	"time"
 )
 
 func TestGoRpc_RegisterServer(t *testing.T) {
-	rpc := NewGoRpc("http://192.168.146.147:2379")
+	etcdUrl := "http://192.168.146.147:2379"
+	rpc := NewGoRpc(etcdUrl)
 	rpc.RegisterServer(
 		service.Service{&Test{},utils.PROTOCOL_RPC},
 		//service.Service{&Test{},utils.PROTOCOL_HTTP},
@@ -16,24 +18,31 @@ func TestGoRpc_RegisterServer(t *testing.T) {
 		//service.Service{&Test{},utils.PROTOCOL_JSON2RPC},
 		//service.Service{&Test{},utils.PROTOCOL_JSON2RPCHTTP},
 	)
+
 	w := make(chan int)
 	<- w
 }
 
 func TestGoRpc_Call(t *testing.T) {
-	goRpc := NewGoRpc("http://192.168.146.147:2379")
-	f := Facade{
-		Service:"api.Test",
-		Method:"Tostring",
-		Args:Request{"ttt protocol rpc"},
-		Response:&Response{},
-		Protocol:utils.PROTOCOL_RPC,
-		//Protocol:utils.PROTOCOL_JSON,
-		//Protocol:utils.PROTOCOL_JSON2RPC,
-		//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
+	t.Log("init:",time.Now().Nanosecond())
+	etcdUrl := "http://192.168.146.147:2379"
+	goRpc := NewGoRpc(etcdUrl)
+	t.Log("start:",time.Now().Nanosecond())
+	for i:=0;i<10;i++ {
+		f := Facade{
+			Service:"api.Test",
+			Method:"Tostring",
+			Args:Request{"ttt protocol rpc"},
+			Response:&Response{},
+			Protocol:utils.PROTOCOL_RPC,
+			//Protocol:utils.PROTOCOL_JSON,
+			//Protocol:utils.PROTOCOL_JSON2RPC,
+			//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
+		}
+		goRpc.Call(f)
+		//t.Log(f.Response)
 	}
-	goRpc.Call(f)
-	t.Log(f.Response)
+	t.Log("end:",time.Now().Nanosecond())
 }
 
 func BenchmarkGoRpc_Call(b *testing.B) {
@@ -52,6 +61,7 @@ func BenchmarkGoRpc_Call(b *testing.B) {
 		goRpc.Call(f)
 		b.Log(f.Response)
 	}
+
 }
 
 func TestGoRpc_RegisterHTTPServer(t *testing.T) {

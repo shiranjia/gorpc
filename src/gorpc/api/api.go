@@ -29,12 +29,14 @@ import (
 	"gorpc/service"
 	"net/rpc"
 	"github.com/powerman/rpc-codec/jsonrpc2"
+	"gorpc/monitor"
 )
 
 type goRpc struct {
-	serversCache map[string][]string `服务列表`
-	register register.Register		`注册中心`
-	lock chan int			`更新服务缓存锁`
+	serversCache 	map[string][]string 		`服务列表`
+	register 	register.Register		`注册中心`
+	lock 		chan int			`更新服务缓存锁`
+	Monitor		monitor.Monitor			`监控工具`
 }
 
 /**
@@ -42,10 +44,15 @@ type goRpc struct {
  */
 func NewGoRpc(host string) *goRpc{
 	g := &goRpc{
-		serversCache : make(map[string][]string),
-		lock : make(chan int,1),
-		register : register.CreateEtcdRegister(host),
+		serversCache 	: 	make(map[string][]string),
+		lock 		: 	make(chan int,1),
+		register 	: 	register.CreateEtcdRegister(host),
 	}
+	m := monitor.Monitor{
+		Register	: 	g.register,
+		Service		:	make(map[string]monitor.MonitorService),
+	}
+	g.Monitor = m
 	return  g
 }
 
@@ -81,6 +88,7 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
 调用服务
  */
 func (r *goRpc) Call(s Facade) error {
+	r.register.Set(s.Service + utils.Separator + "consumer",utils.Ip())
 	switch s.Protocol {
 	case utils.PROTOCOL_RPC		:	return r.callRPC(s)
 	case utils.PROTOCOL_HTTP	:	return r.callHTTP(s)
@@ -431,7 +439,7 @@ func (r *goRpc) updateServersCache(serviceName string ,addOrDel bool,host string
 /**
 调用统计
  */
-func (r *goRpc) invokStatistics( )  {
+func (r *goRpc) invokStatistics()  {
 
 }
 

@@ -17,6 +17,46 @@
  */
 package monitor
 
-type monitor struct {
+import (
+	"gorpc/service"
+	"gorpc/register"
+	"gorpc/utils"
+)
 
+type Monitor struct {
+	Register	register.Register		`注册中心`
+	Service		map[string]MonitorService	`服务列表`
+}
+
+func (m *Monitor) GetDate()  {
+	services,err := m.Register.GetChildren(utils.RootPath + utils.Separator)
+	utils.CheckErr("monitor.GetDate",err)
+	for _,s := range services{
+		service := MonitorService{}
+		service.Name = s.Key
+		provs,err := m.Register.GetChildren(s.Path + utils.Separator + "provider")
+		utils.CheckErr("monitor.GetProviders",err)
+		providers := make([]service.Provider ,10)
+		for _ ,p := range provs {
+			providers = append(providers,p.Key)
+		}
+		service.Provider = providers
+		cons,err := m.Register.GetChildren(s.Path + utils.Separator + "consumer")
+		utils.CheckErr("monitor.GetConsumers",err)
+		consumers := make([]service.Consumer,10)
+		for _,c := range cons{
+			consumers = append(consumers,c.Key)
+		}
+		m.Service[s.Key] = service
+	}
+}
+
+/**
+服务
+ */
+type MonitorService struct {
+	Name		string 			`注册服务`
+	Protocol	string			`协议类型`
+	Provider	[]service.Provider	`服务提供者`
+	Consumer	[]service.Consumer	`服务消费者`
 }

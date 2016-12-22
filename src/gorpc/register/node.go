@@ -18,7 +18,7 @@
 package register
 
 type Node struct {
-	Key string
-	Path string
-	Value string
+	Key string		`节点名称`
+	Path string		`节点全路径`
+	Value string		`节点数值`
 }
