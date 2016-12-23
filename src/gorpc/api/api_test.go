@@ -12,11 +12,11 @@ func TestGoRpc_RegisterServer(t *testing.T) {
 	etcdUrl := "http://127.0.0.1:2379"
 	rpc := NewGoRpc(etcdUrl)
 	rpc.RegisterServer(
-		service.Service{&Test{},utils.PROTOCOL_RPC},
+		//service.Service{&Test{},utils.PROTOCOL_RPC},
 		//service.Service{&Test{},utils.PROTOCOL_HTTP},
 		//service.Service{&Test{},utils.PROTOCOL_JSON},
 		//service.Service{&Test{},utils.PROTOCOL_JSON2RPC},
-		//service.Service{&Test{},utils.PROTOCOL_JSON2RPCHTTP},
+		service.Service{&Test{},utils.PROTOCOL_JSON2RPCHTTP},
 	)
 
 	w := make(chan int)
@@ -34,10 +34,11 @@ func TestGoRpc_Call(t *testing.T) {
 			Method:"Tostring",
 			Args:Request{"ttt protocol rpc"},
 			Response:&Response{},
-			Protocol:utils.PROTOCOL_RPC,
+			//Protocol:utils.PROTOCOL_RPC,
+			//Protocol:utils.PROTOCOL_HTTP,
 			//Protocol:utils.PROTOCOL_JSON,
 			//Protocol:utils.PROTOCOL_JSON2RPC,
-			//Protocol:utils.PROTOCOL_JSON2RPCHTTP,
+			Protocol:utils.PROTOCOL_JSON2RPCHTTP,
 		}
 		goRpc.Call(f)
 		//t.Log(f.Response)

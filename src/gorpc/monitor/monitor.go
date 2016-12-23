@@ -36,21 +36,30 @@ func (m *Monitor) GetDate()  {
 		service := MonitorService{}
 		service.Name = s.Key
 		log.Println("servicePath:",s.Path)
-		provs,err := m.Register.GetChildren(s.Key + utils.Separator + "provider")
+		providers,err := m.Register.GetChildren(s.Key + utils.Separator + utils.Provider)
 		utils.CheckErr("monitor.GetProviders",err)
-		providers := make([]string,10)
-		for _ ,p := range provs {
-			providers = append(providers,p.Key)
-		}
-		service.Provider = providers
-		cons,err := m.Register.GetChildren(s.Key + utils.Separator + "consumer")
+		service.Provider = getProvider(providers)
+		consumers,err := m.Register.GetChildren(s.Key + utils.Separator + utils.Consumer)
 		utils.CheckErr("monitor.GetConsumers",err)
-		consumers := make([]string,10)
-		for _,c := range cons{
-			consumers = append(consumers,c.Key)
-		}
+		service.Consumer = getConsumer(consumers)
 		m.Service[s.Key] = service
 	}
+}
+
+func getProvider(nodes []register.Node) []string{
+	providers := make([]string,0,100)
+	for _ ,p := range nodes {
+		providers = append(providers,p.Key)
+	}
+	return providers
+}
+
+func getConsumer(nodes []register.Node) []string{
+	consumers := make([]string,0,100)
+	for _,c := range nodes{
+		consumers = append(consumers,c.Key)
+	}
+	return consumers
 }
 
 /**

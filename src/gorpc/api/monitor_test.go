@@ -9,6 +9,9 @@ func TestMonitor_GetDate(t *testing.T) {
 	rpc := NewGoRpc(etcdUrl)
 	monitor := rpc.Monitor
 	monitor.GetDate()
-	t.Log(rpc.Monitor.Service)
+	for k,v := range rpc.Monitor.Service {
+		t.Log(k,"->","Providers:",v.Provider,"Consumers:",v.Consumer)
+	}
+
 }
 

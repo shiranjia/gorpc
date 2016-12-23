@@ -29,7 +29,8 @@ import (
 const(
 	RootPath		= "/gorpc"	//根目录
 	Separator		= "/"		//目录分隔符
-
+	Provider		= "provider"
+	Consumer		= "consumer"
 	// include get, set, delete, update, create, compareAndSwap, expire  etcd可订阅事件
 	G			= "get"
 	S			= "set"

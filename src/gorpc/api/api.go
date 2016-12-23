@@ -88,7 +88,7 @@ func  (r *goRpc) RegisterServer(service ...service.Service) {
 调用服务
  */
 func (r *goRpc) Call(s Facade) error {
-	r.register.SetWithTime(s.Service + utils.Separator + "consumer",utils.Ip(),60)
+	r.register.SetWithTime("*" + s.Service + utils.Separator + utils.Consumer + utils.Separator + utils.Ip(),"",60 * 60)
 	switch s.Protocol {
 	case utils.PROTOCOL_RPC		:	return r.callRPC(s)
 	case utils.PROTOCOL_HTTP	:	return r.callHTTP(s)
@@ -339,7 +339,7 @@ func (r *goRpc) getHost(s Facade) (string,int,error)  {
 
 	hosts := r.serversCache[s.Service]
 	if hosts == nil || len(hosts)==0{
-		nodes,err := r.register.GetChildren(s.Service + utils.Separator + "provider")
+		nodes,err := r.register.GetChildren(s.Service + utils.Separator + utils.Provider)
 		utils.CheckErr("api.CallHTTP",err)
 		log.Println(nodes)
 		if len(nodes)==0{
@@ -389,7 +389,7 @@ func  (r *goRpc)  cacheServer(nodes []register.Node,s Facade){
 订阅服务注册中心
  */
 func subscribe(s Facade,r *goRpc){
-	r.register.Subscribe(utils.Key2path(s.Service)  + utils.Separator + "provider" , make(chan int), func(cl *client.Response) {
+	r.register.Subscribe(utils.Key2path(s.Service)  + utils.Separator + utils.Provider , make(chan int), func(cl *client.Response) {
 		path := strings.Split(cl.Node.Key,utils.Separator)
 		hostAndPort := path[len(path)-1]
 		log.Println("收到事件：",cl.Action,cl.Node)
