@@ -8,38 +8,41 @@
 
 ###例子
 #####定义服务：</br>
-#####type Test struct {} </br>
-#####func (t *Test) Tostring(req Request,resp *Response)  error {</br>
-#####	log.Println(req.Body)</br>
-#####	resp.Body = fmt.Sprint(req.Body) +",test"</br>
-#####	return nil</br>
-#####}</br>
-#####注册服务：</br>
-#####etcdUrl := "http://192.168.146.147:2379"</br>
-#####rpc := NewGoRpc(etcdUrl)</br>
-#####rpc.RegisterServer(</br>
-#####service.Service{&Test{},utils.PROTOCOL_RPC},</br>
-#####)</br>
-
+```
+type Test struct {} 
+func (t *Test) Tostring(req Request,resp *Response)  error {
+	log.Println(req.Body)
+	resp.Body = fmt.Sprint(req.Body) +",test"
+	return nil
+}
+//注册服务：
+etcdUrl := "http://192.168.146.147:2379"
+rpc := NewGoRpc(etcdUrl)
+rpc.RegisterServer(
+service.Service{&Test{},utils.PROTOCOL_RPC},)
+```
 #####消费服务：</br>
-#####   etcdUrl := "http://192.168.146.147:2379"</br>
-#####	goRpc := NewGoRpc(etcdUrl)</br>
-#####	f := Facade{</br>
-#####		Service:"api.Test",</br>
-#####		Method:"Tostring",</br>
-#####		Args:Request{"ttt protocol rpc"},</br>
-#####		Response:&Response{},</br>
-#####		Protocol:utils.PROTOCOL_RPC,</br>
-#####	}</br>
-#####	goRpc.Call(f)</br>
-#####	t.Log(f.Response)</br>
-
+```
+  etcdUrl := "http://192.168.146.147:2379"
+	goRpc := NewGoRpc(etcdUrl)
+	f := Facade{
+		Service:"api.Test",
+		Method:"Tostring",
+		Args:Request{"ttt protocol rpc"},
+		Response:&Response{},
+		Protocol:utils.PROTOCOL_RPC,
+	}</br>
+	goRpc.Call(f)
+	t.Log(f.Response)
+```
 ------------------------------------------------------------------------------------------------------------------------------------------
 ##### static模式部署etcd:
-#####$ etcd --name infra0 --initial-advertise-peer-urls http://192.168.146.147:2380 \
-#####  --listen-peer-urls http://192.168.146.147:2380 \
-#####  --listen-client-urls http://192.168.146.147:2379,http://127.0.0.1:2379 \
-#####  --advertise-client-urls http://192.168.146.147:2379 \
-#####  --initial-cluster-token etcd-cluster-1 \
-#####  --initial-cluster infra0=http://192.168.146.147:2380 \
-#####  --initial-cluster-state new
+```
+$ etcd --name infra0 --initial-advertise-peer-urls http://192.168.146.147:2380 \
+  --listen-peer-urls http://192.168.146.147:2380 \
+  --listen-client-urls http://192.168.146.147:2379,http://127.0.0.1:2379 \
+  --advertise-client-urls http://192.168.146.147:2379 \
+  --initial-cluster-token etcd-cluster-1 \
+  --initial-cluster infra0=http://192.168.146.147:2380 \
+  --initial-cluster-state new
+```
