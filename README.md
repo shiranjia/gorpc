@@ -31,7 +31,7 @@ service.Service{&Test{},utils.PROTOCOL_RPC},)
 		Args:Request{"ttt protocol rpc"},
 		Response:&Response{},
 		Protocol:utils.PROTOCOL_RPC,
-	}</br>
+	}
 	goRpc.Call(f)
 	t.Log(f.Response)
 ```
