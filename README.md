@@ -15,7 +15,9 @@ func (t *Test) Tostring(req Request,resp *Response)  error {
 	resp.Body = fmt.Sprint(req.Body) +",test"
 	return nil
 }
-//注册服务：
+```
+#####注册服务：</br>
+```
 etcdUrl := "http://192.168.146.147:2379"
 rpc := NewGoRpc(etcdUrl)
 rpc.RegisterServer(
@@ -23,7 +25,7 @@ service.Service{&Test{},utils.PROTOCOL_RPC},)
 ```
 #####消费服务：</br>
 ```
-  etcdUrl := "http://192.168.146.147:2379"
+  	etcdUrl := "http://192.168.146.147:2379"
 	goRpc := NewGoRpc(etcdUrl)
 	f := Facade{
 		Service:"api.Test",
