@@ -1,13 +1,13 @@
 ##  gorpc
-###go语言分布式服务总线
+### go语言分布式服务总线
 ----------------------------------------------------------------------------------------------------------------------------------------
 ##### * 注册中心使用etcd</br>
 ##### * 主要功能有服务自动发现，负载均衡，故障转移，监控</br>
 ##### * 序列化协议支持gob，json，json-rpc</br>
 ##### * 通信支持tcp，http</br>
 
-###例子
-#####定义服务：</br>
+### 例子
+##### 定义服务：</br>
 ```
 type Test struct {} 
 func (t *Test) Tostring(req Request,resp *Response)  error {
@@ -16,14 +16,14 @@ func (t *Test) Tostring(req Request,resp *Response)  error {
 	return nil
 }
 ```
-#####注册服务：</br>
+##### 注册服务：</br>
 ```
 etcdUrl := "http://192.168.146.147:2379"
 rpc := NewGoRpc(etcdUrl)
 rpc.RegisterServer(
 service.Service{&Test{},utils.PROTOCOL_RPC},)
 ```
-#####消费服务：</br>
+##### 消费服务：</br>
 ```
   	etcdUrl := "http://192.168.146.147:2379"
 	goRpc := NewGoRpc(etcdUrl)
